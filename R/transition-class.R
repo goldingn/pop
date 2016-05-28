@@ -1,3 +1,23 @@
+#' @title transition objects
+#' @name transition
+#' @rdname transition
+#' @param a two-sided formula identifying the states between which the
+#'   transition occurs
+#' @param transfun a \code{\link{transfun}} object quantifying the transition.
+#' @description creates a \code{transition} object, encoding a transition
+#'   between two states. E.g. the probability of a seed germinating, or of an
+#'   individual surviving in each time step
+#' @export
+#' @examples
+#' # 50/50 chance of a larva emerging from an egg
+#' hatching <- tr(lava ~ egg, p(0.5))
+#'
+#' # three eggs laid per adult per time step
+#' fecundity <- tr(egg ~ adult, r(3))
+#'
+#' # 0.1 probability of a larva pupating into an adult
+#' pupa <- tr(adult ~ larva, p(0.1))
+#'
 tr <- function (formula, transfun) {
   # given a formula describing a particular transition,
   # parse into an object & store the value
@@ -17,17 +37,28 @@ tr <- function (formula, transfun) {
 
 }
 
-is.transition <- function (x) inherits(x, 'transition')
-as.transition <- function (x) {
-  class(x) <- c(class(x), 'transition')
-  return (x)
-}
-
-
+#' @rdname transition
+#' @param x a transition object
+#' @param \dots further arguments passed to or from other methods.
+#' @export
+#' @examples
+#' # print method
+#' print(pupa)
 print.transition <- function (x, ...) {
   text <- sprintf('transition:\t%s -> %s with %s\n',
                   x$from,
                   x$to,
                   capture.output(print(x$transfun)))
   cat(text)
+}
+
+#' @rdname transition
+#' @export
+is.transition <- function (x) inherits(x, 'transition')
+
+#' @rdname transition
+#' @export
+as.transition <- function (x) {
+  class(x) <- c(class(x), 'transition')
+  return (x)
 }

@@ -19,7 +19,19 @@ transfunType <- function (x) {
   }
   return (type)
 }
-
+#' @title transfun objects
+#' @name transfun
+#' @rdname transfun
+#' @param a two-sided formula identifying the states between which the
+#'   transition occurs
+#' @param transfun a \code{\link{transfun}} object quantifying the transition.
+#' @description creates a \code{transition} object, encoding a transition
+#'   between two states. E.g. the probability of a seed germinating, or of an
+#'   individual surviving in each time step
+#' @export
+#' @examples
+#' prob <- p(0.3)
+#' is.transfun(prob)
 is.transfun <- function (x) inherits(x, 'transfun')
 
 print.transfun <- function(x, ...) {
