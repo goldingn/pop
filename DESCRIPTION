@@ -1,0 +1,18 @@
+Package: pop
+Type: Package
+Title: A Flexible Syntax for Population Dynamic Modelling
+Version: 0.1
+Date: 2016-05-28
+Author: Nick Golding
+Maintainer: Nick Golding <nick.golding.research@gmail.com>
+Description: Population dynamic models underpin a range of analyses and
+    applications in ecology and epidemiology. The various approaches for fitting
+    and analysing these models (MPMs, IPMs, ODEs, POMPs, PVA, with and without
+    metapopulation structure) are generally fitted using different software, each
+    with a different interface. This makes it difficult to combine various modelling
+    approaches and data types to solve a given problem. pop aims to provide a
+    flexible and easy to use common interface for constructing population dynamic
+    models and enabling to them to be fitted and analysed in various ways.
+License: MIT + file LICENSE
+LazyData: TRUE
+RoxygenNote: 5.0.1
