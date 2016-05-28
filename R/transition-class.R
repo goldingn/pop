@@ -7,6 +7,7 @@
 #' @description creates a \code{transition} object, encoding a transition
 #'   between two states. E.g. the probability of a seed germinating, or of an
 #'   individual surviving in each time step
+#' @details \code{tr} is just a shorthand for \code{transition}
 #' @export
 #' @examples
 #' # 50/50 chance of a larva emerging from an egg
@@ -18,7 +19,7 @@
 #' # 0.1 probability of a larva pupating into an adult
 #' pupa <- tr(adult ~ larva, p(0.1))
 #'
-tr <- function (formula, transfun) {
+transition <- function (formula, transfun) {
   # given a formula describing a particular transition,
   # parse into an object & store the value
 
@@ -38,6 +39,19 @@ tr <- function (formula, transfun) {
 }
 
 #' @rdname transition
+#' @name tr
+tr <- transition
+
+#' @rdname transition
+#' @export
+is.transition <- function (x) inherits(x, 'transition')
+
+as.transition <- function (x) {
+  class(x) <- c(class(x), 'transition')
+  return (x)
+}
+
+#' @rdname transition
 #' @param x a transition object
 #' @param \dots further arguments passed to or from other methods.
 #' @export
@@ -50,15 +64,4 @@ print.transition <- function (x, ...) {
                   x$to,
                   capture.output(print(x$transfun)))
   cat(text)
-}
-
-#' @rdname transition
-#' @export
-is.transition <- function (x) inherits(x, 'transition')
-
-#' @rdname transition
-#' @export
-as.transition <- function (x) {
-  class(x) <- c(class(x), 'transition')
-  return (x)
 }
