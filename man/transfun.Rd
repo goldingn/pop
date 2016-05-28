@@ -2,24 +2,25 @@
 % Please edit documentation in R/transfun-class.R
 \name{transfun}
 \alias{is.transfun}
+\alias{print.transfun}
 \alias{transfun}
 \title{transfun objects}
 \usage{
 is.transfun(x)
+
+\method{print}{transfun}(x, ...)
 }
 \arguments{
-\item{a}{two-sided formula identifying the states between which the
-transition occurs}
-
-\item{transfun}{a \code{\link{transfun}} object quantifying the transition.}
+\item{x}{a transfun object to print or an object to test as a transfun object}
 }
 \description{
-creates a \code{transition} object, encoding a transition
-  between two states. E.g. the probability of a seed germinating, or of an
-  individual surviving in each time step
+utility functions for the \code{transfun} class. \code{transfun}
+  objects are created by functions such as \code{\link{probability}}.
 }
 \examples{
 prob <- p(0.3)
 is.transfun(prob)
+
+prob
 }
 

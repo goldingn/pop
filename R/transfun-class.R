@@ -19,21 +19,25 @@ transfunType <- function (x) {
   }
   return (type)
 }
+
 #' @title transfun objects
 #' @name transfun
 #' @rdname transfun
-#' @param a two-sided formula identifying the states between which the
-#'   transition occurs
-#' @param transfun a \code{\link{transfun}} object quantifying the transition.
-#' @description creates a \code{transition} object, encoding a transition
-#'   between two states. E.g. the probability of a seed germinating, or of an
-#'   individual surviving in each time step
+#' @param x a transfun object to print or an object to test as a transfun object
+#' @description utility functions for the \code{transfun} class. \code{transfun}
+#'   objects are created by functions such as \code{\link{probability}}.
 #' @export
 #' @examples
 #' prob <- p(0.3)
 #' is.transfun(prob)
+#'
 is.transfun <- function (x) inherits(x, 'transfun')
 
+
+#' @rdname transfun
+#' @export
+#' @examples
+#' prob
 print.transfun <- function(x, ...) {
   text <- sprintf('%s %s\n',
                   transfunType(x),
