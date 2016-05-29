@@ -14,5 +14,10 @@ Description: Population dynamic models underpin a range of analyses and
     flexible and easy to use common interface for constructing population dynamic
     models and enabling to them to be fitted and analysed in various ways.
 License: MIT + file LICENSE
+Imports:
+    igraph
+Suggests:
+    knitr,
+    testthat
 LazyData: TRUE
 RoxygenNote: 5.0.1
