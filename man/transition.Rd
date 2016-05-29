@@ -18,7 +18,7 @@ is.transition(x)
 \arguments{
 \item{transfun}{a \code{\link{transfun}} object quantifying the transition.}
 
-\item{x}{a transition object}
+\item{x}{an object to print or test as a transition object}
 
 \item{a}{two-sided formula identifying the states between which the
 transition occurs}

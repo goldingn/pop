@@ -39,6 +39,7 @@ transition <- function (formula, transfun) {
 }
 
 #' @rdname transition
+#' @export
 #' @name tr
 tr <- transition
 
@@ -52,7 +53,7 @@ as.transition <- function (x) {
 }
 
 #' @rdname transition
-#' @param x a transition object
+#' @param x an object to print or test as a transition object
 #' @param \dots further arguments passed to or from other methods.
 #' @export
 #' @examples
