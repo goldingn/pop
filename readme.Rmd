@@ -16,3 +16,73 @@ This makes it difficult to combine various modelling approaches and data types
 to solve a given problem. pop aims to provide a flexible and easy to use common
 interface for constructing population dynamic models and enabling to them to be
 fitted and analysed in various ways.
+
+This is a work in progress - so far you can only create simple dynamical models and not do very much with them. More will follow.
+
+##### Installation
+
+`pop` is not yet on CRAN, so the easiest way to install it is directly from GitHub using the `devtools` package (Windows users may need to download RTools first)
+
+```{r install, eval = FALSE}
+devtools::install_github('goldingn/pop')
+library(pop)
+```
+
+##### Creating a simple population dynamic model
+
+```{r load, eval = TRUE, echo = FALSE}
+library(pop)
+```
+
+`dynamic` objects (created with the function `dynamic()`) are the core of `pop` since they encode dynamical systems, can be updated by fitting to data, and can be analysed in a variety of ways. `dynamic` objects are composed of a series of `transitions` encoding the links between different states in the dynamic. That's all a bit generic, so here's an example for a simple ecological population with three life stages (states).
+
+First we define the different types of transitions between the states:
+
+```{r transitions}
+# probability of staying in the same step between timesteps
+stasis_egg <- tr(egg ~ egg, p(0.4))
+stasis_larva <- tr(larva ~ larva, p(0.3))
+stasis_adult <- tr(adult ~ adult, p(0.8))
+
+# probability of moving to the next state
+hatching <- tr(larva ~ egg, p(0.5))
+pupation <- tr(adult ~ larva, p(0.2))
+
+# number of eggs laid
+fecundity <- tr(egg ~ adult, r(30))
+```
+
+Next we can combine these to create dynamics (systems of transitions). We'll make these three different dynamics to start with:
+
+```{r dynamics}
+stasis <- dynamic(stasis_egg,
+                  stasis_larva,
+                  stasis_adult)
+
+growth <- dynamic(hatching,
+                  pupation)
+
+reproduction <- dynamic(fecundity)
+```
+
+We can plot each of these to see what they look like schematically:
+
+```{r plot_dynamics}
+par(mfrow = c(1, 3))
+plot(stasis); title(main = 'stasis')
+plot(growth); title(main = 'growth')
+plot(reproduction); title(main = 'reproduction')
+```
+
+These components aren't particularly useful on their own though, so we should combine them into one overall population dynamic:
+
+```{r all_dynamics}
+all <- stasis + growth + reproduction
+plot(all)
+```
+
+We can convert any of these objects into transition matrices too:
+
+```{r to_matrix}
+as.matrix(all)
+```
