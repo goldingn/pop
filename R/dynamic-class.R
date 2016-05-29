@@ -64,7 +64,8 @@ as.dynamic <- function (x) {
 }
 
 #' @rdname dynamic
-#' @param x an object to print, plot or test as a dynamic object
+#' @param x a dynamic object to print, plot, convert to a transition matrix, or
+#'   an object to test as a dynamic object,
 #' @export
 #' @import igraph
 #' @examples
@@ -76,8 +77,9 @@ as.dynamic <- function (x) {
 plot.dynamic <- function (x, ...) {
   # plot a dynamic using igraph
 
-  # create an igraph graph object
-  g <- graph.adjacency(t(x$matrix), weighted = TRUE)
+  # extract the transition matrix & create an igraph graph object
+  mat <- t(as.matrix(x))
+  g <- graph.adjacency(mat, weighted = TRUE)
 
   # vertex plotting details
   V(g)$color <- grey(0.9)
@@ -118,3 +120,29 @@ print.dynamic <- function (x, ...) {
   cat(text)
 }
 
+#' @rdname dynamic
+#' @export
+#' @examples
+#' # convert to a transition matrix
+#' as.matrix(all)
+as.matrix.dynamic <- function (x, ...) {
+  # given a vector of states and list of transitions,
+  # build a transition matrix
+  states <- x$states
+  transitions <- x$transitions
+
+  # set up empty matrix
+  n_states <- length(states)
+  mat <- matrix(0, n_states, n_states)
+  rownames(mat) <- colnames(mat) <- states
+
+  # add in the transitions we know about
+  for (t in transitions) {
+    mat[t$to, t$from] <- t$transfun()
+  }
+
+  # set class and return
+  class(mat) <- c(class(mat), 'transition_matrix')
+  return (mat)
+
+}

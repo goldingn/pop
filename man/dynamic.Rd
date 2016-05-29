@@ -2,6 +2,7 @@
 % Please edit documentation in R/dynamic-class.R
 \name{dynamic}
 \alias{+.dynamic}
+\alias{as.matrix.dynamic}
 \alias{dynamic}
 \alias{is.dynamic}
 \alias{plot.dynamic}
@@ -17,9 +18,12 @@ is.dynamic(x)
 \method{plot}{dynamic}(x, ...)
 
 \method{print}{dynamic}(x, ...)
+
+\method{as.matrix}{dynamic}(x, ...)
 }
 \arguments{
-\item{x}{an object to print, plot or test as a dynamic object}
+\item{x}{a dynamic object to print, plot, convert to a transition matrix, or
+an object to test as a dynamic object,}
 
 \item{y}{a dynamic object to be added to another}
 
@@ -63,5 +67,7 @@ plot(all)
 
 # print method
 print(all)
+# convert to a transition matrix
+as.matrix(all)
 }
 
