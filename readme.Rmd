@@ -72,7 +72,7 @@ reproduction <- dynamic(fecundity)
 
 We can plot each of these to see what they look like schematically:
 
-```{r plot_dynamics}
+```{r plot_dynamics, fig.width = 9}
 par(mfrow = c(1, 3))
 plot(stasis); title(main = 'stasis')
 plot(growth); title(main = 'growth')
