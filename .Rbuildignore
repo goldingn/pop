@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+pop.Rproj
+readme.Rmd
+readme.md
+readme_files/
+.travis.yml

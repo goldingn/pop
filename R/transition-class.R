@@ -1,7 +1,7 @@
 #' @title transition objects
 #' @name transition
 #' @rdname transition
-#' @param a two-sided formula identifying the states between which the
+#' @param formula a two-sided formula identifying the states between which the
 #'   transition occurs
 #' @param transfun a \code{\link{transfun}} object quantifying the transition.
 #' @description creates a \code{transition} object, encoding a transition

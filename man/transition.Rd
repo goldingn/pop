@@ -16,12 +16,12 @@ is.transition(x)
 \method{print}{transition}(x, ...)
 }
 \arguments{
+\item{formula}{a two-sided formula identifying the states between which the
+transition occurs}
+
 \item{transfun}{a \code{\link{transfun}} object quantifying the transition.}
 
 \item{x}{an object to print or test as a transition object}
-
-\item{a}{two-sided formula identifying the states between which the
-transition occurs}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

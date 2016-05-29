@@ -12,6 +12,8 @@ is.transfun(x)
 }
 \arguments{
 \item{x}{a transfun object to print or an object to test as a transfun object}
+
+\item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
 utility functions for the \code{transfun} class. \code{transfun}

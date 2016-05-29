@@ -35,6 +35,7 @@ is.transfun <- function (x) inherits(x, 'transfun')
 
 
 #' @rdname transfun
+#' @param \dots further arguments passed to or from other methods.
 #' @export
 #' @examples
 #' prob
