@@ -8,6 +8,10 @@ output:
 
 ### A Flexible Syntax for Population Dynamic Modelling
 
+[![Build Status](https://travis-ci.org/goldingn/pop.svg)](https://travis-ci.org/goldingn/pop)
+[![codecov.io](https://codecov.io/github/goldingn/pop/coverage.svg?branch=master)](https://codecov.io/github/goldingn/pop?branch=master)
+[![cran version](http://www.r-pkg.org/badges/version/pop)](https://cran.rstudio.com/web/packages/pop)
+
 Population dynamic models underpin a range of analyses and applications in
 ecology and epidemiology. The various approaches for fitting and analysing these
 models (MPMs, IPMs, ODEs, POMPs, PVA, with and without metapopulation structure)
@@ -32,6 +36,7 @@ library(pop)
 
 ```{r load, eval = TRUE, echo = FALSE}
 library(pop)
+set.seed(1)
 ```
 
 `dynamic` objects (created with the function `dynamic()`) are the core of `pop` since they encode dynamical systems, can be updated by fitting to data, and can be analysed in a variety of ways. `dynamic` objects are composed of a series of `transitions` encoding the links between different states in the dynamic. That's all a bit generic, so here's an example for a simple ecological population with three life stages (states).
