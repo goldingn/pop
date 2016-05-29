@@ -38,9 +38,7 @@ dynamic <- function (...) {
 
   transitions <- list(...)
   states <- getStates(transitions)
-  matrix <- getMatrix(states, transitions)
   object <- list(transitions = transitions,
-                 matrix = matrix,
                  states = states)
 
   # set class and return
