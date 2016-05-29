@@ -31,6 +31,6 @@ Create a transfun object representing a rate of transition
 rate <- rate(0.2)
 rate <- r(0.2)
 
-is.rate(prob)
+is.rate(rate)
 }
 

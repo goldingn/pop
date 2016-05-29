@@ -19,6 +19,7 @@ rate <- function (value) {
   # label a value as a rate
   stopifnot(is.numeric(value))
   stopifnot(value > 0)
+  stopifnot(is.finite(value))
   f <- function() value
   f <- as.rate(f)
   return (f)
@@ -33,7 +34,7 @@ r <- rate
 #' @param x an object to be tested as a rate transfun object
 #' @export
 #' @examples
-#' is.rate(prob)
+#' is.rate(rate)
 is.rate <- function (x) inherits(x, 'rate')
 
 as.rate <- function (x) {
