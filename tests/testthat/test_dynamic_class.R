@@ -53,6 +53,14 @@ test_that('dynamic classes work', {
   expect_false(is.dynamic(stasis_egg))
   expect_false(is.dynamic(fecundity))
 
+  # check as.dynamic works
+  obj1 <- pop:::as.dynamic(list())
+  obj2 <- pop:::as.dynamic(NA)
+  obj3 <- pop:::as.dynamic(Inf)
+  expect_s3_class(obj1, 'dynamic')
+  expect_s3_class(obj2, 'dynamic')
+  expect_s3_class(obj3, 'dynamic')
+
   # check print.dynamic works
   expect_equal(capture.output(print(all1)),
                'dynamic:	transitions between: egg, larva, adult')

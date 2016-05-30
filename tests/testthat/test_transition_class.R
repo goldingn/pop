@@ -22,6 +22,14 @@ test_that('transition classes work', {
   expect_false(is.transition(NA))
   expect_false(is.transition(NULL))
 
+  # check as.transition works
+  obj1 <- pop:::as.transition(list())
+  obj2 <- pop:::as.transition(NA)
+  obj3 <- pop:::as.transition(Inf)
+  expect_s3_class(obj1, 'transition')
+  expect_s3_class(obj2, 'transition')
+  expect_s3_class(obj3, 'transition')
+
   # check print.transition works
   expect_equal(capture.output(print(tr1)),
                'transition:	egg -> larva with probability 0.5')
