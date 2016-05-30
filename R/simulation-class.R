@@ -134,6 +134,9 @@ plot.simulation <- function (x, states = NULL, ...) {
   # check they're sane
   stopifnot(states %in% x$dynamic$states)
 
+  # object to store the results in
+  result <- list()
+
   # plot them one at a time
   for (state in states) {
 
@@ -145,14 +148,21 @@ plot.simulation <- function (x, states = NULL, ...) {
     if (length(sims) > 1) {
       sims_mat <- do.call(cbind, sims)
       quants <- t(apply(sims_mat, 1, quantile, c(0.025, 0.5, 0.975)))
+    } else {
+      quants <- cbind(rep(NA, length(sims[[1]])),
+                      sims[[1]],
+                      rep(NA, length(sims[[1]])))
     }
 
+    colnames(quants) <- c('lower_95_CI',
+                          'median',
+                          'upper_95_CI')
+
+    rownames(quants) <- names(sims[[1]])
+
     # get y axis range
-    if (length(sims) == 1) {
-      ylim = range(sims[[1]])
-    } else {
-      ylim <- range(quants)
-    }
+    ylim = range(sims[[1]], na.rm = TRUE)
+
     # get x axis
     xaxs <- as.numeric(names(sims[[1]]))
 
@@ -164,24 +174,23 @@ plot.simulation <- function (x, states = NULL, ...) {
          xlab = 'time',
          main = state)
 
-    if (length(sims) == 1) {
-      # if one replicate
-      lines(sims[[1]] ~ xaxs,
-            lwd = 2,
-            col = grey(0.4))
-    } else {
-      # if multiple replicates, draw the 95% CI polygon and median line
-      polygon(x = c(xaxs, rev(xaxs)),
-              y = c(quants[, 1], rev(quants[, 3])),
-              col = grey(0.9),
-              border = NA)
-      lines(quants[, 2] ~ xaxs,
-            lwd = 2,
-            col = grey(0.4))
+    # draw the 95% CI polygon (if available) and median line
+    polygon(x = c(xaxs, rev(xaxs)),
+            y = c(quants[, 1], rev(quants[, 3])),
+            col = grey(0.9),
+            border = NA)
 
-    }
+    lines(quants[, 2] ~ xaxs,
+          lwd = 2,
+          col = grey(0.4))
+
+    result[[state]] <- quants
 
   }
+
+  # name and return result
+  names(result) <- states
+  return (invisible(result))
 
 }
 
