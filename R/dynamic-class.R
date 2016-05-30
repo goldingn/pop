@@ -141,7 +141,7 @@ as.matrix.dynamic <- function (x, ...) {
 
   # add in the transitions we know about
   for (t in transitions) {
-    mat[t$to, t$from] <- t$transfun()
+    mat[t$to, t$from] <- mat[t$to, t$from] + expected(t$transfun)
   }
 
   # set class and return

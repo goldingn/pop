@@ -2,7 +2,7 @@
 
 transfunClasses <- function () {
   # list all available classes of transfun
-  c('probability', 'rate')
+  c('probability', 'rate', 'compound')
 }
 
 transfunType <- function (x) {
@@ -33,15 +33,48 @@ transfunType <- function (x) {
 #'
 is.transfun <- function (x) inherits(x, 'transfun')
 
-
 #' @rdname transfun
 #' @param \dots further arguments passed to or from other methods.
 #' @export
 #' @examples
 #' prob
 print.transfun <- function(x, ...) {
-  text <- sprintf('%s %s\n',
+  text <- sprintf('%s transfun with expectation %s\n',
                   transfunType(x),
-                  x())
+                  expected(x))
   cat(text)
+}
+
+as.compound <- function (x) {
+  # define a compoud transfun class
+  class(x) <- c('compound', 'transfun', class(x))
+  return (x)
+}
+
+#' @rdname transfun
+#' @param y a transfun object to be added to another
+#' @examples
+#' (compound <- prob * r(4.3))
+#'
+`*.transfun` <- function (x, y) {
+  # given two transfun objects, combine them into a compound transfun
+  stopifnot(is.transfun(x))
+  stopifnot(is.transfun(y))
+  z <- function () list(x, y)
+  z <- as.compound(z)
+  return (z)
+}
+
+# add expectation function to grab expectations from transfuns for as.matrix
+expected <- function (transfun) {
+  # get transfun type, if it's a compound, call expectation recursively
+  type <- transfunType(transfun)
+  if (type == 'compound') {
+    # expand and get sub-expectations
+    components <- transfun()
+    expect <- expected(components[[1]]) * expected(components[[2]])
+  } else {
+    expect <- transfun()
+  }
+  return (expect)
 }
