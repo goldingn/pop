@@ -173,7 +173,7 @@ plot.simulation <- function (x, states = NULL, ...) {
       # if multiple replicates, draw the 95% CI polygon and median line
       polygon(x = c(xaxs, rev(xaxs)),
               y = c(quants[, 1], rev(quants[, 3])),
-              col = grey(0.8),
+              col = grey(0.9),
               border = NA)
       lines(quants[, 2] ~ xaxs,
             lwd = 2,
