@@ -98,6 +98,9 @@ plot.dynamic <- function (x, ...) {
 
   plot(g)
 
+  # return the igraph object
+  return (invisible(g))
+
 }
 
 # ~~~~~~~
