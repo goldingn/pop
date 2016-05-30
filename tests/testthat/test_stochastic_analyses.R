@@ -116,4 +116,28 @@ test_that('stochastic analyses work', {
   expect_true(is.simulation(pop:::as.simulation(NA)))
   expect_false(is.simulation(pop:::as.dynamic(NA)))
 
+  # check simulation plotting
+
+  # check output structure for one state
+  plot_out_egg <- plot(sim, state = 'eggs')
+  # list
+  expect_true(is.list(plot_out_egg))
+  # first element as 3 columns and right no. rows
+  expect_equal(dim(plot_out_egg[[1]]), c(51,3))
+  # no NAs
+  expect_true(!any(is.na(plot_out_egg[[1]])))
+
+  # check output structure for all state
+  plot_out_all <- plot(sim)
+  # list
+  expect_true(is.list(plot_out_all))
+  # first element as 3 columns and right no. rows
+  expect_equal(dim(plot_out_all[[1]]), c(51,3))
+  # no NAs
+  expect_true(!any(is.na(plot_out_all[[1]])))
+
+  # error on bad states
+  expect_error(plot(sim, state = 'bee'))
+  expect_error(plot(sim, state = NA))
+
 })
