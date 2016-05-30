@@ -67,4 +67,29 @@ test_that('dynamic classes work', {
   expect_equal(capture.output(print(reproduction)),
                'dynamic:	transitions between: egg, adult')
 
+  # check as.matrix
+  mat_stasis <- as.matrix(stasis)
+  mat_growth <- as.matrix(growth)
+  mat_reproduction <- as.matrix(reproduction)
+  mat_all1 <- as.matrix(all1)
+  mat_all2 <- as.matrix(all2)
+
+  # check classes
+  expect_s3_class(mat_stasis, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_growth, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_reproduction, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all1, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all2, c('matrix', 'transition_matrix'))
+
+  # check dimensions are correct
+  expect_equal(dim(mat_stasis), c(3, 3))
+  expect_equal(dim(mat_growth), c(3, 3))
+  expect_equal(dim(mat_reproduction), c(2, 2))
+  expect_equal(dim(mat_all1), c(3, 3))
+  expect_equal(dim(mat_all2), c(3, 3))
+
+
+  # check all1 and all2 are still the same even as matrices
+  expect_equal(mat_all1, mat_all2)
+
 })

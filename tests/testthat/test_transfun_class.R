@@ -19,7 +19,6 @@ test_that('transfun classes work', {
   expect_false(is.transfun(NA))
   expect_false(is.transfun(NULL))
 
-
   # check print.transfun works
   expect_equal(capture.output(print(prob)),
                'probability 0.5')
