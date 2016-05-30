@@ -9,7 +9,7 @@ Population dynamic models underpin a range of analyses and applications in ecolo
 
 This is a work in progress - so far you can only create simple dynamical models and not do very much with them. More will follow.
 
-##### Installation
+#### Installation
 
 `pop` is not yet on CRAN, so the easiest way to install it is directly from GitHub using the `devtools` package (Windows users may need to download RTools first)
 
@@ -18,7 +18,7 @@ devtools::install_github('goldingn/pop')
 library(pop)
 ```
 
-##### Creating a simple population dynamic model
+#### Creating a simple population dynamic model
 
 `dynamic` objects (created with the function `dynamic()`) are the core of `pop` since they encode dynamical systems, can be updated by fitting to data, and can be analysed in a variety of ways. `dynamic` objects are composed of a series of `transitions` encoding the links between different states in the dynamic. That's all a bit generic, so here's an example for a simple ecological population with three life stages (states).
 
@@ -71,7 +71,9 @@ plot(all)
 
 ![](readme_files/figure-markdown_github/all_dynamics-1.png)<!-- -->
 
-We can convert any of these objects into transition matrices too:
+#### Doing things with models
+
+So far no analysis methods have been implemented. We can convert any of these objects into transition matrices though:
 
 ``` r
 as.matrix(all)

@@ -23,7 +23,7 @@ fitted and analysed in various ways.
 
 This is a work in progress - so far you can only create simple dynamical models and not do very much with them. More will follow.
 
-##### Installation
+#### Installation
 
 `pop` is not yet on CRAN, so the easiest way to install it is directly from GitHub using the `devtools` package (Windows users may need to download RTools first)
 
@@ -32,7 +32,7 @@ devtools::install_github('goldingn/pop')
 library(pop)
 ```
 
-##### Creating a simple population dynamic model
+#### Creating a simple population dynamic model
 
 ```{r load, eval = TRUE, echo = FALSE}
 library(pop)
@@ -86,7 +86,9 @@ all <- stasis + growth + reproduction
 plot(all)
 ```
 
-We can convert any of these objects into transition matrices too:
+#### Doing things with models
+
+So far no analysis methods have been implemented. We can convert any of these objects into transition matrices though:
 
 ```{r to_matrix}
 as.matrix(all)
