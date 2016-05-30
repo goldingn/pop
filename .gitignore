@@ -1,4 +1,8 @@
+# RStudio stuff
 .Rproj.user
 .Rhistory
 .RData
 pop.RProj
+
+# plots from tests
+tests/testthat/Rplots.pdf

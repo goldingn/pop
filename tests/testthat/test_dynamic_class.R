@@ -88,8 +88,19 @@ test_that('dynamic classes work', {
   expect_equal(dim(mat_all1), c(3, 3))
   expect_equal(dim(mat_all2), c(3, 3))
 
-
   # check all1 and all2 are still the same even as matrices
   expect_equal(mat_all1, mat_all2)
+
+  # check that plot returns an igraph object
+  plot_stasis <- plot(stasis)
+  plot_growth <- plot(growth)
+  plot_reproduction <- plot(reproduction)
+  plot_all1 <- plot(all1)
+  plot_all2 <- plot(all2)
+  expect_s3_class(plot_stasis, 'igraph')
+  expect_s3_class(plot_growth, 'igraph')
+  expect_s3_class(plot_reproduction, 'igraph')
+  expect_s3_class(plot_all1, 'igraph')
+  expect_s3_class(plot_all2, 'igraph')
 
 })
