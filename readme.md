@@ -26,16 +26,16 @@ First we define the different types of transitions between the states:
 
 ``` r
 # probability of staying in the same step between timesteps
-stasis_egg <- tr(egg ~ egg, p(0.4))
-stasis_larva <- tr(larva ~ larva, p(0.3))
-stasis_adult <- tr(adult ~ adult, p(0.8))
+stasis_egg <- tr(eggs ~ eggs, p(0.4))
+stasis_larva <- tr(larvae ~ larvae, p(0.3))
+stasis_adult <- tr(adults ~ adults, p(0.8))
 
 # probability of moving to the next state
-hatching <- tr(larva ~ egg, p(0.5))
-pupation <- tr(adult ~ larva, p(0.2))
+hatching <- tr(larvae ~ eggs, p(0.5))
+pupation <- tr(adults ~ larvae, p(0.2))
 
 # number of eggs laid
-fecundity <- tr(egg ~ adult, r(30))
+fecundity <- tr(eggs ~ adults, r(20))
 ```
 
 Next we can combine these to create dynamics (systems of transitions). We'll make these three different dynamics to start with:
@@ -73,15 +73,36 @@ plot(all)
 
 #### Doing things with models
 
-So far no analysis methods have been implemented. We can convert any of these objects into transition matrices though:
+We can convert any of these objects into transition matrices, and gaze at them lovingly:
 
 ``` r
 as.matrix(all)
 ```
 
-    ##       egg larva adult
-    ## egg   0.4   0.0  30.0
-    ## larva 0.5   0.3   0.0
-    ## adult 0.0   0.2   0.8
+    ##        eggs larvae adults
+    ## eggs    0.4    0.0   20.0
+    ## larvae  0.5    0.3    0.0
+    ## adults  0.0    0.2    0.8
     ## attr(,"class")
     ## [1] "matrix"            "transition_matrix"
+
+In the near future deterministic analysis methods for these transition matrices will be made available too.
+
+`pop` also provides the function `simulation` to carry out discrete-time stochastic simulations of models:
+
+``` r
+# define the starting population as a named integer vector
+population <- c(eggs = 1000, larvae = 200, adults = 50)
+
+# simulate 30 times for 50 generations each
+sim <- simulation(dynamic = all,
+           population = population,
+           timesteps = 50,
+           replicates = 30)
+
+# plot abundance of the three life stages
+par(mfrow = c(3, 1))
+plot(sim)
+```
+
+![](readme_files/figure-markdown_github/simulation-1.png)<!-- -->
