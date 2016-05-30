@@ -60,9 +60,9 @@ as.transition <- function (x) {
 #' # print method
 #' print(pupa)
 print.transition <- function (x, ...) {
-  text <- sprintf('transition:\t%s -> %s with %s\n',
+  text <- sprintf('transition:\t%s -> %s with expectation %s\n',
                   x$from,
                   x$to,
-                  capture.output(print(x$transfun)))
+                  expected(x$transfun))
   cat(text)
 }

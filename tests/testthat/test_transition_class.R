@@ -32,8 +32,8 @@ test_that('transition classes work', {
 
   # check print.transition works
   expect_equal(capture.output(print(tr1)),
-               'transition:	egg -> larva with probability 0.5')
+               'transition:	egg -> larva with expectation 0.5')
   expect_equal(capture.output(print(tr2)),
-               'transition:	adult -> egg with rate 10')
+               'transition:	adult -> egg with expectation 10')
 
 })
