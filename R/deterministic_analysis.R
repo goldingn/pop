@@ -6,3 +6,10 @@ r0 <- function (x) {
   r0 <- Re(eigen(mat)$values[1])
   return (r0)
 }
+
+lambda <- function (x) {
+  stopifnot(is.dynamic(x))
+  mat <- as.matrix(x, type= 'A')
+  r0 <- Re(eigen(mat)$values[1])
+  return (r0)
+}

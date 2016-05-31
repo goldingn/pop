@@ -65,7 +65,7 @@ as.dynamic <- function (x) {
 
 #' @rdname dynamic
 #' @param x a dynamic object to print, plot, convert to a transition matrix, or
-#'   an object to test as a dynamic object,
+#'   an object to test as a dynamic object (for \code{is.dynamic}),
 #' @export
 #' @import igraph
 #' @examples
@@ -78,8 +78,12 @@ plot.dynamic <- function (x, ...) {
   # plot a dynamic using igraph
 
   # extract the transition matrix & create an igraph graph object
-  mat <- t(getP(x) + getF(x))
-  g <- graph.adjacency(mat, weighted = TRUE)
+  textmat <- t(textMatrix(x))
+  linkmat <- textmat != ''
+  g <- graph.adjacency(linkmat, weighted = TRUE)
+
+  # extract edge labels
+  labels <- textmat[get.edges(g, seq_len(sum(linkmat)))]
 
   # vertex plotting details
   V(g)$color <- grey(0.9)
@@ -92,7 +96,7 @@ plot.dynamic <- function (x, ...) {
   E(g)$color <- grey(0.5)
   E(g)$curved <- curve_multiple(g, 0.1)
   E(g)$arrow.size <- 0.5
-  E(g)$label <- get.edge.attribute(g, 'weight')
+  E(g)$label <- labels
   E(g)$loop.angle <- 4
   E(g)$label.color <- grey(0.4)
 
@@ -125,21 +129,24 @@ print.dynamic <- function (x, ...) {
 
 #' @rdname dynamic
 #' @param which which type of matrix to build: the overall population growth
-#'   matrix (\code{'R'}), the probabilistic progression matrix (\code{'P'}) or
-#'   the fecundity matrix (\code{'R'}) matrix
+#'   matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
+#'   fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
+#'   (\code{'R'})
 #' @export
+#' @importFrom MASS ginv
 #' @examples
 #' # convert to a transition matrix
 #' as.matrix(all)
-as.matrix.dynamic <- function (x, which = c('R', 'P', 'F'), ...) {
+as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
-  # build the overall (R), progression (P) of fecundity (F) matrix
+  # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
   mat <- switch(which,
-                R = getR(x),
-                P = getP(x),
-                F = getF(x))
+                `A` = getA(x),
+                `P` = getP(x),
+                `F` = getF(x),
+                `R` = getR(x))
 
   # set class and return
   class(mat) <- c(class(mat), 'transition_matrix')
@@ -147,9 +154,14 @@ as.matrix.dynamic <- function (x, which = c('R', 'P', 'F'), ...) {
 
 }
 
-#' @importFrom MASS ginv
+getA <- function (x) {
+  # get the full population projection matrix from a dynamic
+  mat <- getP(x) + getF(x)
+  return (mat)
+}
+
 getR <- function (x) {
-  # get the full recursion matrix from a dynamic;
+  # get the reproduction matrix from a dynamic;
   # combine P & F accounting for clonal
   # reproduction (rates on diagonal)
   P <- getP(x)
@@ -233,4 +245,33 @@ containsRate <- function (transfun) {
     ans <- FALSE
   }
   return (ans)
+}
+
+# create a matrix contining text reporting the transition
+textMatrix <- function (x) {
+  mat <- matrix('', length(x$states), length(x$states))
+  rownames(mat) <- colnames(mat) <- x$states
+  for (t in x$transitions) {
+    mat[t$to, t$from] <- transfun2text(t$transfun)
+  }
+  return (mat)
+}
+
+transfun2text <- function (transfun) {
+  # create a short text representation of a transfun, for use in plotting
+  type <- transfunType(transfun)
+  if (type == 'compound') {
+    components <- transfun()
+    text <- paste0(transfun2text(components[[1]]),
+                   ' * ',
+                   transfun2text(components[[2]]))
+  } else {
+    prefix <- switch(type,
+                     probability = 'p',
+                     rate = 'r')
+    text <- sprintf('%s(%s)',
+                    prefix,
+                    round(expected(transfun), 2))
+  }
+  return (text)
 }

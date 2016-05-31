@@ -69,6 +69,7 @@ simulation <- function (dynamic, population, timesteps = 1, replicates = 1, ncor
     # parallel case
 
     # set up the cluster
+    on.exit(parallel::stopCluster(cl))
     cl <- parallel::makeCluster(ncores)
 
     # export pop
@@ -82,9 +83,6 @@ simulation <- function (dynamic, population, timesteps = 1, replicates = 1, ncor
                                 dynamic = dynamic,
                                 population = population,
                                 timesteps = timesteps)
-
-    # stop the cluster
-    parallel::stopCluster(cl)
 
   } else {
     # sequence case

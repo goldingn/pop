@@ -19,17 +19,18 @@ is.dynamic(x)
 
 \method{print}{dynamic}(x, ...)
 
-\method{as.matrix}{dynamic}(x, which = c("R", "P", "F"), ...)
+\method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), ...)
 }
 \arguments{
 \item{x}{a dynamic object to print, plot, convert to a transition matrix, or
-an object to test as a dynamic object,}
+an object to test as a dynamic object (for \code{is.dynamic}),}
 
 \item{y}{a dynamic object to be added to another}
 
 \item{which}{which type of matrix to build: the overall population growth
-matrix (\code{'R'}), the probabilistic progression matrix (\code{'P'}) or
-the fecundity matrix (\code{'R'}) matrix}
+matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
+fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
+(\code{'R'})}
 
 \item{\dots}{one or more transition objects making up the dynamic (for the
 \code{dynamic} function) or additional arguments (for \code{plot} and

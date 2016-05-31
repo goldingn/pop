@@ -32,12 +32,6 @@ test_that('stochastic analyses work', {
                     replicates = 30,
                     ncores = 1)
 
-  # run with default cores
-  sim <- simulation(dynamic = all,
-                    population = population,
-                    timesteps = 50,
-                    replicates = 30)
-
   # check it has the right class and structure
   expect_s3_class(sim, 'simulation')
   expect_s3_class(sim$dynamic, 'dynamic')
