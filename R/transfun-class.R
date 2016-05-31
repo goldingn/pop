@@ -52,7 +52,15 @@ as.compound <- function (x) {
 }
 
 #' @rdname transfun
-#' @param y a transfun object to be added to another
+#' @param y a transfun object to be multiplied with another with the same
+#'   pathway
+#' @details multiplication of transfun objects with the same pathway results in
+#'   a compound transfun object (also of class \code{transfun}). When used in a
+#'   stochastic model, the two stochastic transitions are evaluated one after
+#'   another. When analysed deterministically, the expectation of the compound
+#'   transition function is taken as the product of the expectations of the two
+#'   basis transfuns.
+#' @export
 #' @examples
 #' (compound <- prob * r(4.3))
 #'
@@ -78,3 +86,4 @@ expected <- function (transfun) {
   }
   return (expect)
 }
+

@@ -198,22 +198,45 @@ update <- function (population, transition, ...) {
   # stochastically update the population based on a transition the dots argument
   # may be used to specify environmental or other determinants of the transition
   # function
-  value <- transition$transfun()
   N <- population[transition$from]
-  type <- transfunType(transition$transfun)
-  population[transition$to] <- stoch(value = value,
-                                     N = N,
-                                     type = type)
+  population[transition$to] <- stoch(transition$transfun,
+                                     N = N)
   return (population)
 }
 
-stoch <- function (value, N, type) {
+# stochastic updates for probabilities and rates
+stoch_prob <- function (parameters, N) {
+  rbinom(n = 1, size = N, prob = parameters[1])
+}
+stoch_rate <- function (parameters, N) {
+  rpois(n = 1, lambda = N * parameters[1])
+}
+
+stoch <- function (transfun, N) {
   # given a parameter value, a number of individuals in the *from* state,
   # stochastically generate the number of individuals in the *to* state
-  ans <- switch(type,
-                probability = rbinom(n = 1, size = N, prob = value),
-                rate = rpois(n = 1, lambda = N * value))
-  return (ans)
+
+  # get type
+  type <- transfunType(transfun)
+
+  if (type == 'compound') {
+
+    # if it's a compound transfun, call stoch recursively on each component
+    components <- transfun()
+    N <- stoch(components[[1]], N)
+    N <- stoch(components[[2]], N)
+
+  } else {
+
+    # otherwise execute the transition
+    N <- switch(type,
+                probability = stoch_prob(expected(transfun), N),
+                rate = stoch_rate(expected(transfun), N))
+
+  }
+
+  return (N)
+
 }
 
 popSimulate <- function (iter, dynamic, population, timesteps) {
@@ -243,6 +266,7 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
   }
 
   return (res)
+
 }
 
 as.simulation <- function (x) {

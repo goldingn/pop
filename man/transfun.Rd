@@ -16,13 +16,22 @@ is.transfun(x)
 \arguments{
 \item{x}{a transfun object to print or an object to test as a transfun object}
 
-\item{y}{a transfun object to be added to another}
+\item{y}{a transfun object to be multiplied with another with the same
+pathway}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \description{
 utility functions for the \code{transfun} class. \code{transfun}
   objects are created by functions such as \code{\link{probability}}.
+}
+\details{
+multiplication of transfun objects with the same pathway results in
+  a compound transfun object (also of class \code{transfun}). When used in a
+  stochastic model, the two stochastic transitions are evaluated one after
+  another. When analysed deterministically, the expectation of the compound
+  transition function is taken as the product of the expectations of the two
+  basis transfuns.
 }
 \examples{
 prob <- p(0.3)
