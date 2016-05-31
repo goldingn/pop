@@ -37,6 +37,8 @@ library(pop)
 ```{r load, eval = TRUE, echo = FALSE}
 library(pop)
 set.seed(1)
+library(knitr)
+knit_hooks$set(set_xpd = function (before, options, envir) par(xpd = NA))
 ```
 
 `dynamic` objects (created with the function `dynamic()`) are the core of `pop` since they encode dynamical systems, can be updated by fitting to data, and can be analysed in a variety of ways. `dynamic` objects are composed of a series of `transitions` encoding the links between different states in the dynamic. That's all a bit generic, so here's an example for a simple ecological population with three life stages (states).
@@ -72,7 +74,7 @@ reproduction <- dynamic(fecundity)
 
 We can plot each of these to see what they look like schematically:
 
-```{r plot_dynamics, fig.width = 9, fig.height = 4, dpi = 300}
+```{r plot_dynamics, fig.width = 9, fig.height = 4, dpi = 300, set_xpd = TRUE}
 par(mfrow = c(1, 3))
 plot(stasis); title(main = 'stasis')
 plot(growth); title(main = 'growth')
@@ -81,26 +83,31 @@ plot(reproduction); title(main = 'reproduction')
 
 These components aren't particularly useful on their own though, so we should combine them into one overall population dynamic:
 
-```{r all_dynamics}
+```{r all_dynamics, dpi = 300, set_xpd = TRUE}
 all <- stasis + growth + reproduction
 plot(all)
 ```
 
 #### Doing things with models
 
-We can convert any of these objects into transition matrices, and gaze at them lovingly:
+We can convert any of these objects into transition matrices, and analyse them deterministically using functions from other matrix population model packages, like `popbio` and `popdemo`:
 
-```{r to_matrix}
-as.matrix(all)
+```{r popdemo}
+A <- as.matrix(all)
+
+# estimate the intrinsic growth rate & stable stage distribution
+popbio::lambda(A)
+(ss <- popbio::stable.stage(A))
+
+# plot predicted deterministic trajectory
+plot(popdemo::project(A, ss * 1000, time = 50))
 ```
 
-In the near future deterministic analysis methods for these transition matrices will be made available too.
-
-`pop` also provides the function `simulation` to carry out discrete-time stochastic simulations of models:
+We can also use the function `simulation` to carry out discrete-time stochastic simulations from dynamic objects:
 
 ```{r simulation, fig.height = 9}
 # define the starting population as a named integer vector
-population <- c(eggs = 1000, larvae = 200, adults = 50)
+population <- round(ss * 1000)
 
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
