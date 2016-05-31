@@ -155,9 +155,59 @@ as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 }
 
 getA <- function (x) {
+
   # get the full population projection matrix from a dynamic
-  mat <- getP(x) + getF(x)
+  # set up empty matrix
+  mat <- diag(length(x$states))
+  rownames(mat) <- colnames(mat) <- x$states
+
+  # apply the transitions
+  for (t in x$transitions) {
+
+    # get the expectation
+    expectation <- expected(t$transfun)
+
+    # if it's a rate (or compound containing a rate)
+    if (containsRate(t$transfun)) {
+
+      if (t$to == t$from) {
+
+        # if it's the diagonal (clonal reproduction), multiply by the expectation and add
+        mat[t$to, t$from] <- mat[t$to, t$from] * (1 + expectation)
+
+      } else {
+
+        # if it's the off-diagonal, get the diagonal probability
+        diag_prob <- mat[t$from, t$from]
+
+        # multiply by probability (proportion surviving)
+        mat[t$to, t$from] <- mat[t$to, t$from] + diag_prob * expectation
+
+      }
+
+    } else {
+      # if it's not a rate (nor compound containing a rate)
+
+      if (t$to == t$from) {
+        # if it's the diagonal, multiply by the expectation
+        mat[t$to, t$from] <- mat[t$to, t$from] * expectation
+      } else {
+        # if it's the off-diagonal, get the diagonal probability
+        diag_prob <- mat[t$from, t$from]
+
+        # multiply by probability and not probability
+        mat[t$to, t$from] <- mat[t$to, t$from] + diag_prob * expectation
+
+        # reduce the diagonal by the reciprocal
+        mat[t$from, t$from] <- diag_prob * (1 - expectation)
+      }
+
+    }
+
+  }
+
   return (mat)
+
 }
 
 getR <- function (x) {
@@ -275,3 +325,4 @@ transfun2text <- function (transfun) {
   }
   return (text)
 }
+
