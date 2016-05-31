@@ -26,38 +26,40 @@ First we define the different types of transitions between the states:
 
 ``` r
 # probability of staying in the same step between timesteps
-stasis_egg <- tr(eggs ~ eggs, p(0.4))
-stasis_larva <- tr(larvae ~ larvae, p(0.3))
-stasis_adult <- tr(adults ~ adults, p(0.8))
+survival_egg <- tr(eggs ~ eggs, p(0.4))
+survival_larva <- tr(larvae ~ larvae, p(0.3))
+survival_adult <- tr(adults ~ adults, p(0.8))
 
 # probability of moving to the next state
 hatching <- tr(larvae ~ eggs, p(0.5))
 pupation <- tr(adults ~ larvae, p(0.2))
 
-# number of eggs laid
-fecundity <- tr(eggs ~ adults, r(20))
+# probability and number of eggs laid
+prob_laying <- tr(eggs ~ adults, p(0.5))
+fecundity <- tr(eggs ~ adults, r(30))
 ```
 
 Next we can combine these to create dynamics (systems of transitions). We'll make these three different dynamics to start with:
 
 ``` r
-stasis <- dynamic(stasis_egg,
-                  stasis_larva,
-                  stasis_adult)
+survival <- dynamic(survival_egg,
+                  survival_larva,
+                  survival_adult)
 
-growth <- dynamic(hatching,
-                  pupation)
+growth <- dynamic(pupation,
+                  hatching)
 
-reproduction <- dynamic(fecundity)
+# we want the product of these two things, which we might estimate separately
+recruitment <- dynamic(prob_laying * fecundity)
 ```
 
 We can plot each of these to see what they look like schematically:
 
 ``` r
 par(mfrow = c(1, 3))
-plot(stasis); title(main = 'stasis')
+plot(survival); title(main = 'survival')
 plot(growth); title(main = 'growth')
-plot(reproduction); title(main = 'reproduction')
+plot(recruitment); title(main = 'recruitment')
 ```
 
 ![](readme_files/figure-markdown_github/plot_dynamics-1.png)<!-- -->
@@ -65,7 +67,15 @@ plot(reproduction); title(main = 'reproduction')
 These components aren't particularly useful on their own though, so we should combine them into one overall population dynamic:
 
 ``` r
-all <- stasis + growth + reproduction
+# note the careful order here to make sure eggs laid in one time step can't
+# pupate in the same timestep
+all <- dynamic(survival_egg,
+               survival_larva,
+               survival_adult,
+               hatching,
+               prob_laying * fecundity,
+               pupation)
+               
 plot(all)
 ```
 
@@ -82,14 +92,14 @@ A <- as.matrix(all)
 popbio::lambda(A)
 ```
 
-    ## [1] 1.105935
+    ## [1] 1.023296
 
 ``` r
 (ss <- popbio::stable.stage(A))
 ```
 
-    ##       eggs     larvae     adults 
-    ## 0.78353880 0.18096945 0.03549176
+    ##      eggs    larvae    adults 
+    ## 0.7553216 0.1928573 0.0518211
 
 ``` r
 # plot predicted deterministic trajectory
@@ -102,13 +112,19 @@ We can also use the function `simulation` to carry out discrete-time stochastic 
 
 ``` r
 # define the starting population as a named integer vector
-population <- round(ss * 1000)
+(population <- round(ss * 1000))
+```
 
+    ##   eggs larvae adults 
+    ##    755    193     52
+
+``` r
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
            population = population,
            timesteps = 50,
-           replicates = 30)
+           replicates = 30,
+           ncores = 1)
 
 # plot abundance of the three life stages
 par(mfrow = c(3, 1))
