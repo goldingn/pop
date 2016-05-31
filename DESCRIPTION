@@ -15,7 +15,8 @@ Description: Population dynamic models underpin a range of analyses and
     models and enabling to them to be fitted and analysed in various ways.
 License: MIT + file LICENSE
 Imports:
-    igraph
+    igraph,
+    MASS
 Suggests:
     knitr,
     testthat

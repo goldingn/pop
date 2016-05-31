@@ -65,7 +65,7 @@ as.dynamic <- function (x) {
 
 #' @rdname dynamic
 #' @param x a dynamic object to print, plot, convert to a transition matrix, or
-#'   an object to test as a dynamic object,
+#'   an object to test as a dynamic object (for \code{is.dynamic}),
 #' @export
 #' @import igraph
 #' @examples
@@ -78,8 +78,12 @@ plot.dynamic <- function (x, ...) {
   # plot a dynamic using igraph
 
   # extract the transition matrix & create an igraph graph object
-  mat <- t(as.matrix(x))
-  g <- graph.adjacency(mat, weighted = TRUE)
+  textmat <- t(textMatrix(x))
+  linkmat <- textmat != ''
+  g <- graph.adjacency(linkmat, weighted = TRUE)
+
+  # extract edge labels
+  labels <- textmat[get.edges(g, seq_len(sum(linkmat)))]
 
   # vertex plotting details
   V(g)$color <- grey(0.9)
@@ -92,7 +96,7 @@ plot.dynamic <- function (x, ...) {
   E(g)$color <- grey(0.5)
   E(g)$curved <- curve_multiple(g, 0.1)
   E(g)$arrow.size <- 0.5
-  E(g)$label <- get.edge.attribute(g, 'weight')
+  E(g)$label <- labels
   E(g)$loop.angle <- 4
   E(g)$label.color <- grey(0.4)
 
@@ -124,28 +128,150 @@ print.dynamic <- function (x, ...) {
 }
 
 #' @rdname dynamic
+#' @param which which type of matrix to build: the overall population growth
+#'   matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
+#'   fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
+#'   (\code{'R'})
 #' @export
+#' @importFrom MASS ginv
 #' @examples
 #' # convert to a transition matrix
 #' as.matrix(all)
-as.matrix.dynamic <- function (x, ...) {
-  # given a vector of states and list of transitions,
-  # build a transition matrix
-  states <- x$states
-  transitions <- x$transitions
+as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
-  # set up empty matrix
-  n_states <- length(states)
-  mat <- matrix(0, n_states, n_states)
-  rownames(mat) <- colnames(mat) <- states
+  # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
+  which <- match.arg(which)
 
-  # add in the transitions we know about
-  for (t in transitions) {
-    mat[t$to, t$from] <- mat[t$to, t$from] + expected(t$transfun)
-  }
+  mat <- switch(which,
+                `A` = getA(x),
+                `P` = getP(x),
+                `F` = getF(x),
+                `R` = getR(x))
 
   # set class and return
   class(mat) <- c(class(mat), 'transition_matrix')
   return (mat)
 
+}
+
+getA <- function (x) {
+  # get the full population projection matrix from a dynamic
+  mat <- getP(x) + getF(x)
+  return (mat)
+}
+
+getR <- function (x) {
+  # get the reproduction matrix from a dynamic;
+  # combine P & F accounting for clonal
+  # reproduction (rates on diagonal)
+  P <- getP(x)
+  eye <- diag(nrow(P))
+  mat <- getF(x) %*% ginv(eye - P)
+  return (mat)
+}
+
+getF <- function (x) {
+
+  # set up empty matrix
+  mat <- diag(length(x$states)) * 0
+  rownames(mat) <- colnames(mat) <- x$states
+
+  # apply the transitions
+  for (t in x$transitions) {
+
+    # if it's a rate (or compound containing a rate)
+    if (containsRate(t$transfun)) {
+
+      # get the expectation and add it in
+      expectation <- expected(t$transfun)
+      mat[t$to, t$from] <-  expectation
+
+    }
+
+  }
+
+  return (mat)
+
+}
+
+getP <- function (x) {
+
+  # set up empty matrix
+  mat <- diag(length(x$states))
+  rownames(mat) <- colnames(mat) <- x$states
+
+  # apply the transitions
+  for (t in x$transitions) {
+
+    # if it's not a rate (nor compound containing a rate)
+    if (!containsRate(t$transfun)) {
+
+      # get the expectation
+      expectation <- expected(t$transfun)
+
+      if (t$to == t$from) {
+        # if it's the diagonal, multiply by the expectation
+        mat[t$to, t$from] <- mat[t$to, t$from] * expectation
+      } else {
+        # if it's the off-diagonal, get the diagonal probability
+        diag_prob <- mat[t$from, t$from]
+
+        # multiply by probability and not probability
+        mat[t$to, t$from] <- mat[t$to, t$from] + diag_prob * expectation
+
+        # reduce the diagonal by the reciprocal
+        mat[t$from, t$from] <- diag_prob * (1 - expectation)
+      }
+
+    }
+
+  }
+
+  return (mat)
+
+}
+
+containsRate <- function (transfun) {
+  # check whether a transition contains a rate transition (rather than pure
+  # probability)
+  type <- transfunType(transfun)
+  if (type == 'compound') {
+    # if it's a compound, call recursively to look for any
+    components <- transfun()
+    ans <- containsRate(components[[1]]) | containsRate(components[[2]])
+  } else if (type == 'rate') {
+    ans <- TRUE
+  } else {
+    ans <- FALSE
+  }
+  return (ans)
+}
+
+# create a matrix contining text reporting the transition
+textMatrix <- function (x) {
+  mat <- matrix('', length(x$states), length(x$states))
+  rownames(mat) <- colnames(mat) <- x$states
+  for (t in x$transitions) {
+    mat[t$to, t$from] <- transfun2text(t$transfun)
+  }
+  return (mat)
+}
+
+transfun2text <- function (transfun) {
+  # create a short text representation of a transfun, for use in plotting
+  type <- transfunType(transfun)
+  if (type == 'compound') {
+    components <- transfun()
+    text <- paste0(transfun2text(components[[1]]),
+                   ' * ',
+                   transfun2text(components[[2]]))
+  } else {
+    prefix <- switch(type,
+                     probability = 'p',
+                     rate = 'r')
+    text <- sprintf('%s(%s)',
+                    prefix,
+                    round(expected(transfun), 2))
+  }
+  return (text)
 }

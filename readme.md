@@ -73,26 +73,36 @@ plot(all)
 
 #### Doing things with models
 
-We can convert any of these objects into transition matrices, and gaze at them lovingly:
+We can convert any of these objects into transition matrices, and analyse them deterministically using functions from other matrix population model packages, like `popbio` and `popdemo`:
 
 ``` r
-as.matrix(all)
+A <- as.matrix(all)
+
+# estimate the intrinsic growth rate & stable stage distribution
+popbio::lambda(A)
 ```
 
-    ##        eggs larvae adults
-    ## eggs    0.4    0.0   20.0
-    ## larvae  0.5    0.3    0.0
-    ## adults  0.0    0.2    0.8
-    ## attr(,"class")
-    ## [1] "matrix"            "transition_matrix"
+    ## [1] 1.105935
 
-In the near future deterministic analysis methods for these transition matrices will be made available too.
+``` r
+(ss <- popbio::stable.stage(A))
+```
 
-`pop` also provides the function `simulation` to carry out discrete-time stochastic simulations of models:
+    ##       eggs     larvae     adults 
+    ## 0.78353880 0.18096945 0.03549176
+
+``` r
+# plot predicted deterministic trajectory
+plot(popdemo::project(A, ss * 1000, time = 50))
+```
+
+![](readme_files/figure-markdown_github/popdemo-1.png)<!-- -->
+
+We can also use the function `simulation` to carry out discrete-time stochastic simulations from dynamic objects:
 
 ``` r
 # define the starting population as a named integer vector
-population <- c(eggs = 1000, larvae = 200, adults = 50)
+population <- round(ss * 1000)
 
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
