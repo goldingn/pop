@@ -59,10 +59,35 @@ as.transition <- function (x) {
 #' @examples
 #' # print method
 #' print(pupa)
+#'
 print.transition <- function (x, ...) {
-  text <- sprintf('transition:\t%s -> %s with %s\n',
+  text <- sprintf('transition:\t%s -> %s with expectation %s\n',
                   x$from,
                   x$to,
-                  capture.output(print(x$transfun)))
+                  expected(x$transfun))
   cat(text)
 }
+
+#' @rdname transition
+#' @param y a transition object to be multiplied with another with the same
+#'   pathway
+#' @details multiplication of transition objects with the same pathway results
+#'   in a transition object whose \code{transfun} object is a compound of the
+#'   two transfuns in the transitions. See \code{\link{transfun}} for more
+#'   details of compound transfuns.
+#' @export
+#' @examples
+#' # make a compound transition to include a probability of laying eggs
+#' prob_laying <- tr(egg ~ adult, p(0.6))
+#' (recruitment <- prob_laying * fecundity)
+#'
+`*.transition` <- function (x, y) {
+  # given two transition objects on the same pathway, combine their transfuns
+  # into a compound transfun
+  stopifnot(x$from == y$from & x$to == y$to)
+  stopifnot(is.transition(x))
+  stopifnot(is.transition(y))
+  x$transfun <- x$transfun * y$transfun
+  return (x)
+}
+

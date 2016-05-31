@@ -21,8 +21,8 @@ test_that('transfun classes work', {
 
   # check print.transfun works
   expect_equal(capture.output(print(prob)),
-               'probability 0.5')
+               'probability transfun with expectation 0.5')
   expect_equal(capture.output(print(rate)),
-               'rate 3')
+               'rate transfun with expectation 3')
 
 })
