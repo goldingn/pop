@@ -159,7 +159,7 @@ plot.simulation <- function (x, states = NULL, ...) {
     rownames(quants) <- names(sims[[1]])
 
     # get y axis range
-    ylim = range(sims[[1]], na.rm = TRUE)
+    ylim = range(quants, na.rm = TRUE)
 
     # get x axis
     xaxs <- as.numeric(names(sims[[1]]))
