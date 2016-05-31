@@ -192,14 +192,63 @@ plot.simulation <- function (x, states = NULL, ...) {
 
 }
 
-update <- function (population, transition, ...) {
-  # stochastically update the population based on a transition the dots argument
+update <- function (population, dynamic, ...) {
+  # stochastically update the population based on a dynamic. The dots argument
   # may be used to specify environmental or other determinants of the transition
   # function
-  N <- population[transition$from]
-  population[transition$to] <- stoch(transition$transfun,
-                                     N = N)
-  return (population)
+
+  # get new population object to fill
+  new_population <- population * 0
+
+  # loop through transitions
+  for (trans in dynamic$transitions) {
+
+    # get the old and new N
+    N <- population[trans$from]
+    N_new <- stoch(trans$transfun, N = N)
+
+    if (trans$to == trans$from) {
+      # if it's to the same state...
+
+      if (containsRate(trans$transfun)) {
+
+        # if it's a rate (recruitment) add to new population
+        new_population[trans$to] <- new_population[trans$to] + N_new
+
+      } else {
+
+        # if it's a (survival) probability (not recruitment), replace *old*
+        # population with the new one
+        population[trans$to] <- N_new
+
+      }
+
+    } else {
+      # if it's to another state
+
+      if (containsRate(trans$transfun)) {
+
+        # if it was a recruitment event add to the state in the new population
+        new_population[trans$to] <- new_population[trans$to] + N_new
+
+      } else {
+
+        # if it *wasn't* a recruitment event, update in the new population
+        new_population[trans$to] <- new_population[trans$to] + N_new
+
+        # and remove the same number from the old population
+        population[trans$from] <- population[trans$from] - N_new
+
+      }
+
+    }
+
+  }
+
+  # add surviving members of the old population to the new one & return
+  new_population <- new_population + population
+  return (new_population)
+
 }
 
 # stochastic updates for probabilities and rates
@@ -250,12 +299,8 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
   colnames(res) <- names(population)
 
   for (time in seq_len(timesteps)) {
-    for (trans in dynamic$transitions) {
 
-      # update the population stochastically
-      population <- update(population, trans)
-
-    }
+    population <- update(population, dynamic)
 
     # store the result & call it quits if they're all gone
     res[time + 1, ] <- population
