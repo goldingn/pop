@@ -61,10 +61,17 @@ as.transition <- function (x) {
 #' print(pupa)
 #'
 print.transition <- function (x, ...) {
-  text <- sprintf('transition:\t%s -> %s with expectation %s\n',
-                  x$from,
-                  x$to,
-                  expected(x$transfun))
+  if (containsUserTransfun(x$transfun)) {
+    text <- sprintf('transition:\t%s -> %s with user-defined transfun\n',
+                    x$from,
+                    x$to)
+
+  } else {
+    text <- sprintf('transition:\t%s -> %s with expectation %s\n',
+                    x$from,
+                    x$to,
+                    expected(x$transfun))
+  }
   cat(text)
 }
 

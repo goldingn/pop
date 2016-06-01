@@ -139,6 +139,15 @@ print.dynamic <- function (x, ...) {
 #' as.matrix(all)
 as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
+  user_defined <- sapply(x$transitions,
+                         function (z) containsUserTransfun(z$transfun))
+
+  if(any(user_defined)) {
+    message ('this dynamic contains transitions with user-defined transfun objects.
+             To construct the matrix, you may need to provide one or more of the required arguments: population, area and features.
+             See ?as.transfun for details')
+  }
+
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
