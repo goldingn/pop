@@ -25,8 +25,7 @@ landscape(dynamic) <- value
 
 \method{print}{dynamic}(x, ...)
 
-\method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), patch = NULL,
-  ...)
+\method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), ...)
 }
 \arguments{
 \item{x}{a dynamic object to print, plot, convert to a transition matrix, or
@@ -42,10 +41,6 @@ an object to test as a dynamic object (for \code{is.dynamic}),}
 matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
 fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
 (\code{'R'})}
-
-\item{patch}{an optional \code{patch} object providing details on the patch
-in which the dynamic is being evaluated. If the default of \code{patch =
-NULL} is specified, a 'default' patch is used.}
 
 \item{\dots}{one or more transition objects making up the dynamic (for the
 \code{dynamic} function) or additional arguments (for \code{plot} and
@@ -64,15 +59,6 @@ creates a \code{dynamic} object, comprising multiple
 The accessor function \code{landscape} either returns or sets the
   landscape structure of the dynamic. Currently encoded as a
   \code{\link{patch}} object
-
-If \code{patch = NULL}, a default patch is created using
-  \code{patch(NULL)}, and used to construct the matrix (see
-  \code{\link{patch}} for details of this default). This default may well not
-  contain sufficient information to evaluate the matrix (since the required
-  features, or populations of life stages in the dynamic may not be present).
-  If the dynamic contains a user-defined transition function, and
-  \code{patch} is left at it's default, a message is issued reminding the
-  user of this (they may also get an error shortly after)
 }
 \examples{
 # define transitions for a simple three-stage system (with implicit
@@ -94,6 +80,7 @@ reproduction <- dynamic(fecundity)
 
 # combine these into one dynamic
 all <- stasis + growth + reproduction
+
 # plot these
 plot(stasis)
 plot(growth)

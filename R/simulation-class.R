@@ -192,20 +192,21 @@ plot.simulation <- function (x, states = NULL, ...) {
 
 }
 
-update <- function (population, dynamic, ...) {
-  # stochastically update the population based on a dynamic. The dots argument
-  # may be used to specify environmental or other determinants of the transition
-  # function
+update <- function (population, dynamic) {
+  # stochastically update the population based on a dynamic.
 
   # get new population object to fill
   new_population <- population * 0
+
+  # get patch object
+  patch <- landscape(dynamic)
 
   # loop through transitions
   for (trans in dynamic$transitions) {
 
     # get the old and new N
     N <- population[trans$from]
-    N_new <- stoch(trans$transfun, N = N)
+    N_new <- stoch(trans$transfun, N = N, patch = patch)
 
     if (trans$to == trans$from) {
       # if it's to the same state...
@@ -259,7 +260,7 @@ stoch_rate <- function (parameters, N) {
   rpois(n = 1, lambda = N * parameters[1])
 }
 
-stoch <- function (transfun, N) {
+stoch <- function (transfun, N, patch) {
   # given a parameter value, a number of individuals in the *from* state,
   # stochastically generate the number of individuals in the *to* state
 
@@ -270,15 +271,15 @@ stoch <- function (transfun, N) {
 
     # if it's a compound transfun, call stoch recursively on each component
     components <- transfun()
-    N <- stoch(components[[1]], N)
-    N <- stoch(components[[2]], N)
+    N <- stoch(components[[1]], N, patch)
+    N <- stoch(components[[2]], N, patch)
 
   } else {
 
     # otherwise execute the transition
     N <- switch(type,
-                probability = stoch_prob(expected(transfun), N),
-                rate = stoch_rate(expected(transfun), N))
+                probability = stoch_prob(expected(transfun, patch), N),
+                rate = stoch_rate(expected(transfun, patch), N))
 
   }
 
@@ -300,7 +301,11 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
 
   for (time in seq_len(timesteps)) {
 
+    # sample the population
     population <- update(population, dynamic)
+
+    # update it in the patch information
+    population(landscape(dynamic)) <- population
 
     # store the result & call it quits if they're all gone
     res[time + 1, ] <- population
