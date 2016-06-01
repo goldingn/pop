@@ -70,7 +70,6 @@ pd <- dynamic(stasis_egg,
               fecundity)
 
 population <- c(egg = 1200, larva = 250, adult = 50)
-names(population) <- pd$states
 
 # simulate for 50 timesteps, 30 times
 sim <- simulation(dynamic = pd,

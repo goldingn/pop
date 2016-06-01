@@ -130,7 +130,9 @@ par(mfrow = c(3, 1))
 plot(sim)
 ```
 
-`pop` now support user-defined transition functions, where the parameter may depend on other things, like the population size, patch area or other environmental drivers.
+#### Density dependence
+
+`pop` now supports user-defined transition functions, where the parameter may depend on other things, like the population size, patch area or other environmental drivers.
 
 We can use this functionality to update the above simulation analysis with density-dependent adult survival (see `?as.transfun` for details on how to define bespoke transition functions):
 
@@ -162,4 +164,17 @@ sim_dd <- simulation(dynamic = all_dd,
 # and plot it
 par(mfrow = c(3, 1))
 plot(sim_dd)
+```
+
+While we used the `popdemo` function `project` to make deterministic projections from the earlier density-*independent* model, that approach can't account for the effect of density dependence. Instead, we can use `pop`'s `projection` function to make deterministic density-dependent projections:
+
+```{r deterministic_dd,  fig.height = 9, dpi = 300}
+# project for 100 time steps
+proj_dd <- projection(dynamic = all_dd,
+           population = population,
+           timesteps = 100)
+
+# and plot it
+par(mfrow = c(3, 1))
+plot(proj_dd)
 ```
