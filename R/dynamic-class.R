@@ -42,7 +42,8 @@ dynamic <- function (...) {
                  states = states)
 
   # set class and return
-  class(object) <- 'dynamic'
+  object <- as.dynamic(object)
+  landscape(object) <- patch(object)
   return (object)
 }
 
@@ -52,6 +53,7 @@ dynamic <- function (...) {
 #' @examples
 #' # combine these into one dynamic
 #' all <- stasis + growth + reproduction
+#'
 `+.dynamic` <- function (x, y) add.dynamic(x, y)
 
 #' @rdname dynamic
@@ -59,7 +61,9 @@ dynamic <- function (...) {
 is.dynamic <- function (x) inherits(x, 'dynamic')
 
 as.dynamic <- function (x) {
-  class(x) <- c(class(x), 'dynamic')
+  if (!is.dynamic(x)) {
+    class(x) <- c('dynamic', class(x))
+  }
   return (x)
 }
 
@@ -108,6 +112,32 @@ plot.dynamic <- function (x, ...) {
 }
 
 # ~~~~~~~
+# access to structure attribute of dynamic
+
+#' @rdname dynamic
+#' @name landscape
+#' @param dynamic an object of class \code{dynamic}
+#' @param value an object of class \code{patch}
+#' @export
+#' @details The accessor function \code{landscape} either returns or sets the
+#'   landscape structure of the dynamic. Currently encoded as a
+#'   \code{\link{patch}} object
+landscape <- function (dynamic) {
+  stopifnot(is.dynamic(dynamic))
+  value <- attr(dynamic, 'landscape')
+  return (value)
+}
+
+#' @rdname dynamic
+#' @export
+`landscape<-` <- function (dynamic, value) {
+  stopifnot(is.dynamic(dynamic))
+  stopifnot(is.patch(value))
+  attr(dynamic, 'landscape') <- value
+  return (dynamic)
+}
+
+# ~~~~~~~
 # dynamic composition functions
 
 add.dynamic <- function (dynamic1, dynamic2) {
@@ -139,6 +169,9 @@ print.dynamic <- function (x, ...) {
 #' as.matrix(all)
 as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
+  user_defined <- sapply(x$transitions,
+                         function (z) containsUserTransfun(z$transfun))
+
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
@@ -160,12 +193,13 @@ getA <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states))
   rownames(mat) <- colnames(mat) <- x$states
+  patch <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
 
     # get the expectation
-    expectation <- expected(t$transfun)
+    expectation <- expected(t$transfun, patch)
 
     # if it's a rate (or compound containing a rate)
     if (containsRate(t$transfun)) {
@@ -225,6 +259,7 @@ getF <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states)) * 0
   rownames(mat) <- colnames(mat) <- x$states
+  patch <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
@@ -233,7 +268,7 @@ getF <- function (x) {
     if (containsRate(t$transfun)) {
 
       # get the expectation and add it in
-      expectation <- expected(t$transfun)
+      expectation <- expected(t$transfun, patch)
       mat[t$to, t$from] <-  expectation
 
     }
@@ -249,6 +284,7 @@ getP <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states))
   rownames(mat) <- colnames(mat) <- x$states
+  patch <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
@@ -257,7 +293,7 @@ getP <- function (x) {
     if (!containsRate(t$transfun)) {
 
       # get the expectation
-      expectation <- expected(t$transfun)
+      expectation <- expected(t$transfun, patch)
 
       if (t$to == t$from) {
         # if it's the diagonal, multiply by the expectation
@@ -316,12 +352,21 @@ transfun2text <- function (transfun) {
                    ' * ',
                    transfun2text(components[[2]]))
   } else {
+
+    # make a nice simple text representation
     prefix <- switch(type,
                      probability = 'p',
                      rate = 'r')
+
+    # don't try to find the expectation if it's user-defined
+    expect <- ifelse(containsUserTransfun(transfun),
+                     '?',
+                     round(expected(transfun), 2))
+
     text <- sprintf('%s(%s)',
                     prefix,
-                    round(expected(transfun), 2))
+                    expect)
+
   }
   return (text)
 }

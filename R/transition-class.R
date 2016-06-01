@@ -33,7 +33,7 @@ transition <- function (formula, transfun) {
                  from = from,
                  transfun = transfun)
 
-  class(object) <- 'transition'
+  object <- as.transition(object)
   return (object)
 
 }
@@ -48,7 +48,9 @@ tr <- transition
 is.transition <- function (x) inherits(x, 'transition')
 
 as.transition <- function (x) {
-  class(x) <- c(class(x), 'transition')
+  if (!is.transition(x)) {
+    class(x) <- c('transition', class(x))
+  }
   return (x)
 }
 
@@ -61,10 +63,17 @@ as.transition <- function (x) {
 #' print(pupa)
 #'
 print.transition <- function (x, ...) {
-  text <- sprintf('transition:\t%s -> %s with expectation %s\n',
-                  x$from,
-                  x$to,
-                  expected(x$transfun))
+  if (containsUserTransfun(x$transfun)) {
+    text <- sprintf('transition:\t%s -> %s with user-defined transfun\n',
+                    x$from,
+                    x$to)
+
+  } else {
+    text <- sprintf('transition:\t%s -> %s with expectation %s\n',
+                    x$from,
+                    x$to,
+                    expected(x$transfun))
+  }
   cat(text)
 }
 

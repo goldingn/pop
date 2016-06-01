@@ -39,15 +39,26 @@ is.transfun <- function (x) inherits(x, 'transfun')
 #' @examples
 #' prob
 print.transfun <- function(x, ...) {
-  text <- sprintf('%s transfun with expectation %s\n',
-                  transfunType(x),
-                  expected(x))
+  if (containsUserTransfun(x)) {
+    text <- sprintf('user-specified %s transfun',
+                    transfunType(x))
+  } else {
+    patch <- patch(NULL)
+    text <- sprintf('%s transfun with expectation %s\n',
+                    transfunType(x),
+                    expected(x, patch))
+  }
+
   cat(text)
 }
 
+is.compound <- function (x) inherits(x, 'compound')
+
 as.compound <- function (x) {
-  # define a compoud transfun class
-  class(x) <- c('compound', 'transfun', class(x))
+  # define a compound transfun class
+  if (!is.compound(x)) {
+    class(x) <- c('compound', 'transfun', class(x))
+  }
   return (x)
 }
 
@@ -68,22 +79,101 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function () list(x, y)
+  z <- function (...) list(x, y)
   z <- as.compound(z)
   return (z)
 }
 
 # add expectation function to grab expectations from transfuns for as.matrix
-expected <- function (transfun) {
+expected <- function (transfun, patch) {
   # get transfun type, if it's a compound, call expectation recursively
   type <- transfunType(transfun)
   if (type == 'compound') {
     # expand and get sub-expectations
     components <- transfun()
-    expect <- expected(components[[1]]) * expected(components[[2]])
+    expect <- expected(components[[1]], patch) * expected(components[[2]], patch)
   } else {
-    expect <- transfun()
+    expect <- transfun(patch)
   }
   return (expect)
 }
 
+#' @title create a transition function
+#' @name as.transfun
+#' @description A utility function to enable users to create bespoke transition
+#'   functions (\code{transfun} objects) for use in \code{transition}s.
+#' @param fun an R function describing the transition. This must take only one
+#'   argument: \code{patch}, and return a single numeric value, see
+#'   \code{details}.
+#' @param type what type of transition this function represents, a probability
+#'   or a rate
+#' @details \code{fun} must take only one argument, \code{patch}, an object of
+#'   class \code{\link{patch}}. \code{patch} objects contain three elements
+#'   which may be used in the function: \code{population}, a named numeric
+#'   vector giving the number of individuals of each stage *within the patch*;
+#'   \code{area}; a single numeric value giving the area of the patch in square
+#'   kilometres; and \code{features}, a named numeric vector containing
+#'   miscellaneous features of the habitat patch, such and measures of patch
+#'   quality or environmental variables. See examples for an illustration of how
+#'   to these objects.
+#' @export
+#' @examples
+#' # a very simple (and unnecessary, see ?p) transfun
+#' fun <- function(patch) 0.3
+#' prob0_3 <- as.transfun(fun, type = 'probability')
+#'
+#' # a density-dependent probability (population and area are passed via the
+#' # dots)
+#' dd_fun <- function (patch) {
+#'     adult_density <- patch$population['adult'] / patch$area
+#'     sqrt(1 / adult_density)
+#' }
+#' dd_prob <- as.transfun(dd_fun, type = 'probability')
+#'
+#'
+as.transfun <- function (fun, type = c('probability', 'rate')) {
+
+  # line up the transfun type
+  type <- match.arg(type)
+
+  # check it's a function
+  stopifnot(is.function(fun))
+
+  # check dots is the only argument
+  args <- names(formals(fun))
+  if (length(args) != 1 && args != 'patch') {
+    stop ("transfun objects must only take the argument 'patch'
+          see ?as.transfun for details and examples")
+  }
+
+  # assign type and return
+  fun <- switch(type,
+                probability = as.probability(fun),
+                rate = as.rate(fun))
+
+  attr(fun, 'user-defined') <- TRUE
+
+  return (fun)
+}
+
+containsUserTransfun <- function (transfun) {
+  # test whether a transfun object contains a user-defined transfun
+
+  # get transfun type, if it's a compound, call this function recursively
+  type <- transfunType(transfun)
+
+  if (type == 'compound') {
+    # expand and test components
+    components <- transfun()
+    ans <- containsUserTransfun(components[[1]]) | containsUserTransfun(components[[2]])
+  } else {
+    # otherwise test this
+    ans <- attr(transfun, 'user-defined')
+    if (is.null(ans)){
+      ans <- FALSE
+    }
+  }
+
+  return (ans)
+
+}

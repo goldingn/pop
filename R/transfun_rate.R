@@ -20,7 +20,7 @@ rate <- function (value) {
   stopifnot(is.numeric(value))
   stopifnot(value > 0)
   stopifnot(is.finite(value))
-  f <- function() value
+  f <- function (patch) value
   f <- as.rate(f)
   return (f)
 }
@@ -38,6 +38,11 @@ r <- rate
 is.rate <- function (x) inherits(x, 'rate')
 
 as.rate <- function (x) {
-  class(x) <- c('rate', 'transfun', class(x))
+  if (!is.transfun(x)) {
+    class(x) <- c('transfun', class(x))
+  }
+  if (!is.rate(x)) {
+    class(x) <- c('rate', class(x))
+  }
   return (x)
 }

@@ -5,6 +5,8 @@
 \alias{as.matrix.dynamic}
 \alias{dynamic}
 \alias{is.dynamic}
+\alias{landscape}
+\alias{landscape<-}
 \alias{plot.dynamic}
 \alias{print.dynamic}
 \title{dynamic objects}
@@ -17,6 +19,10 @@ is.dynamic(x)
 
 \method{plot}{dynamic}(x, ...)
 
+landscape(dynamic)
+
+landscape(dynamic) <- value
+
 \method{print}{dynamic}(x, ...)
 
 \method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), ...)
@@ -26,6 +32,10 @@ is.dynamic(x)
 an object to test as a dynamic object (for \code{is.dynamic}),}
 
 \item{y}{a dynamic object to be added to another}
+
+\item{dynamic}{an object of class \code{dynamic}}
+
+\item{value}{an object of class \code{patch}}
 
 \item{which}{which type of matrix to build: the overall population growth
 matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
@@ -44,6 +54,11 @@ creates a \code{dynamic} object, comprising multiple
   \code{dynamic} objects to make another) and and analysed in various ways
   (deterministically to obtain demographic parameters, simulated to evaluate
   population viability etc.)
+}
+\details{
+The accessor function \code{landscape} either returns or sets the
+  landscape structure of the dynamic. Currently encoded as a
+  \code{\link{patch}} object
 }
 \examples{
 # define transitions for a simple three-stage system (with implicit
@@ -65,6 +80,7 @@ reproduction <- dynamic(fecundity)
 
 # combine these into one dynamic
 all <- stasis + growth + reproduction
+
 # plot these
 plot(stasis)
 plot(growth)

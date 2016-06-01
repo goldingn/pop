@@ -18,7 +18,7 @@ probability <- function (value) {
   # label a value as a probability
   stopifnot(is.numeric(value))
   stopifnot(value > 0 & value < 1)
-  f <- function() value
+  f <- function (patch) value
   f <- as.probability(f)
   return (f)
 }
@@ -37,7 +37,12 @@ is.probability <- function (x) inherits(x, 'probability')
 
 # unexported
 as.probability <- function (x) {
-  class(x) <- c('probability', 'transfun', class(x))
+  if (!is.transfun(x)) {
+    class(x) <- c('transfun', class(x))
+  }
+  if (!is.probability(x)) {
+    class(x) <- c('probability', class(x))
+  }
   return (x)
 }
 
