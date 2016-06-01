@@ -43,8 +43,8 @@ Next we can combine these to create dynamics (systems of transitions). We'll mak
 
 ``` r
 survival <- dynamic(survival_egg,
-                  survival_larva,
-                  survival_adult)
+                    survival_larva,
+                    survival_adult)
 
 growth <- dynamic(pupation,
                   hatching)
@@ -87,8 +87,17 @@ plot(all)
 We can convert any of these objects into transition matrices, and analyse them deterministically using functions from other matrix population model packages, like `popbio` and `popdemo`:
 
 ``` r
-A <- as.matrix(all)
+(A <- as.matrix(all))
+```
 
+    ##        eggs larvae adults
+    ## eggs    0.2   0.00   13.5
+    ## larvae  0.2   0.24    0.0
+    ## adults  0.0   0.06    0.9
+    ## attr(,"class")
+    ## [1] "matrix"            "transition_matrix"
+
+``` r
 # estimate the intrinsic growth rate & stable stage distribution
 popbio::lambda(A)
 ```
@@ -118,9 +127,9 @@ We can also use the function `simulation` to carry out discrete-time stochastic 
 ``` r
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
-           population = population,
-           timesteps = 50,
-           replicates = 30)
+                  population = population,
+                  timesteps = 50,
+                  replicates = 30)
 
 # plot abundance of the three life stages
 par(mfrow = c(1, 3))
@@ -156,9 +165,9 @@ all_dd <- dynamic(survival_egg,
 
 # run the simulation (a little longer and with more simulations this time)
 sim_dd <- simulation(dynamic = all_dd,
-           population = population,
-           timesteps = 100,
-           replicates = 100)
+                     population = population,
+                     timesteps = 100,
+                     replicates = 100)
 
 # and plot it
 par(mfrow = c(1, 3))
@@ -172,8 +181,8 @@ While we used the `popdemo` function `project` to make deterministic projections
 ``` r
 # project for 100 time steps
 proj_dd <- projection(dynamic = all_dd,
-           population = population,
-           timesteps = 100)
+                      population = population,
+                      timesteps = 100)
 
 # and plot it
 par(mfrow = c(1, 3))
