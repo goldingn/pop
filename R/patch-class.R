@@ -30,9 +30,9 @@
 #' patch <- patch(NULL)
 #'
 #' # create a more interesting patch
-# patch <- patch(list(area = 10,
-#                     population = c(adult = 10, larva = 3, egg = 20),
-#                     features = c(temperature = 10)))
+#' patch <- patch(list(area = 10,
+#'                     population = c(adult = 10, larva = 3, egg = 20),
+#'                     features = c(temperature = 10)))
 patch <- function (patch_data) {
   switch(class(patch_data),
          NULL = patchDefault(),
@@ -49,12 +49,83 @@ is.patch <- function (x) inherits(x, 'patch')
 #' @export
 #' @examples
 #' # print method
-#' print(patch(NULL))
+#' print(patch)
 #'
 print.patch <- function(x, ...) {
   text <- sprintf('patch with area of %s square km\n',
                   round(x$area, 2))
   cat(text)
+}
+
+# accessor functions for patches
+#' @rdname patch
+#' @export
+#' @param patch an object of class \code{patch}
+#' @details the accessor functions \code{area}, \code{population} and
+#'   \code{features} either return or set the elements of the same name in a
+#'   \code{patch} object
+#' @examples
+#' # get and set the area
+#' area(patch)
+#' area(patch) <- 2
+#' area(patch)
+#'
+area <- function (patch) {
+  stopifnot(is.patch(patch))
+  return(patch$area)
+}
+
+#' @rdname patch
+#' @export
+`area<-` <- function (patch, value) {
+  stopifnot(is.patch(patch))
+  areaCheck(value)
+  patch$area <- value
+  return(patch)
+}
+
+#' @rdname patch
+#' @export
+#' @examples
+#'# get and set the population
+#' population(patch)
+#' population(patch) <- population(patch) * 2
+#' population(patch)
+#'
+population <- function (patch) {
+  stopifnot(is.patch(patch))
+  return(patch$population)
+}
+
+#' @rdname patch
+#' @export
+`population<-` <- function (patch, value) {
+  stopifnot(is.patch(patch))
+  populationCheck(value)
+  patch$population <- value
+  return(patch)
+}
+
+#' @rdname patch
+#' @export
+#' @examples
+#'# get and set the features
+#' features(patch)
+#' features(patch) <- c(features(patch), rainfall = 100)
+#' features(patch)
+#'
+features <- function (patch) {
+  stopifnot(is.patch(patch))
+  return (patch$features)
+}
+
+#' @rdname patch
+#' @export
+`features<-` <- function (patch, value) {
+  stopifnot(is.patch(patch))
+  featuresCheck(value)
+  patch$features <- value
+  return(patch)
 }
 
 areaCheck <- function (area) {
