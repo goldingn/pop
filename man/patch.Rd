@@ -32,12 +32,15 @@ features(patch) <- value
 }
 \arguments{
 \item{patch_data}{an object to turn into a \code{patch} object. Currently
-this can either be a list or NULL (see \code{details}), though more
-approaches will be added in the future}
+this can either be a dynamic, a list or \code{NULL} (see \code{details}),
+though more approaches will be added in the future}
 
 \item{x}{an object to print or test as a patch object}
 
 \item{patch}{an object of class \code{patch}}
+
+\item{value}{the value to assign to the \code{area}, \code{population}, or
+\code{features} elements of \code{patch}}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -60,8 +63,11 @@ an object of class \code{patch}, with elements \code{area},
   patch, such and measures of patch quality or environmental variables.
   Alternatively, \code{patch_data = NULL}, will set up a 'default' patch with
   \code{area = 1} and blank \code{population} and \code{features} elements.
-  This is what's used in analysing a \code{dynamic} object without
-  metapopulation structure.
+  The other option is to pass a \code{dynamic} object as \code{patch_data},
+  in which case the set up will be the same as for \code{patch_data = NULL}
+  except that \code{population} will be a named vector of 0s, with the names
+  giving the states contained in the dynamic. This is what's used in
+  analysing a \code{dynamic} object without metapopulation structure.
 
 the accessor functions \code{area}, \code{population} and
   \code{features} either return or set the elements of the same name in a

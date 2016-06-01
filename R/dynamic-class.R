@@ -43,6 +43,7 @@ dynamic <- function (...) {
 
   # set class and return
   object <- as.dynamic(object)
+  landscape(object) <- patch(object)
   return (object)
 }
 
@@ -107,6 +108,31 @@ plot.dynamic <- function (x, ...) {
   # return the igraph object
   return (invisible(g))
 
+}
+
+# ~~~~~~~
+# access to structure attribute of dynamic
+
+#' @rdname dynamic
+#' @name landscape
+#' @param dynamic an object of class \code{dynamic}
+#' @param value an object of class \code{patch}
+#' @export
+#' @details The accessor function \code{landscape} either returns or sets the
+#'   landscape structure of the dynamic. Currently encoded as a
+#'   \code{\link{patch}} object
+landscape <- function (dynamic) {
+  stopifnot(is.dynamic(dynamic))
+  value <- attr(dynamic, 'landscape')
+  return (value)
+}
+#' @rdname dynamic
+#' @export
+`landscape<-` <- function (dynamic, value) {
+  stopifnot(is.dynamic(dynamic))
+  stopifnot(is.patch(value))
+  attr(dynamic, 'landscape') <- value
+  return (dynamic)
 }
 
 # ~~~~~~~

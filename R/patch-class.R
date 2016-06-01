@@ -9,8 +9,8 @@
 #'   storing information (such as area, population and environmental features)
 #'   that may impact on the dynamic transitions occurring in that patch
 #' @param patch_data an object to turn into a \code{patch} object. Currently
-#'   this can either be a list or NULL (see \code{details}), though more
-#'   approaches will be added in the future
+#'   this can either be a dynamic, a list or \code{NULL} (see \code{details}),
+#'   though more approaches will be added in the future
 #' @return an object of class \code{patch}, with elements \code{area},
 #'   \code{population}, \code{features} providing information about a habitat
 #'   patch
@@ -23,8 +23,11 @@
 #'   patch, such and measures of patch quality or environmental variables.
 #'   Alternatively, \code{patch_data = NULL}, will set up a 'default' patch with
 #'   \code{area = 1} and blank \code{population} and \code{features} elements.
-#'   This is what's used in analysing a \code{dynamic} object without
-#'   metapopulation structure.
+#'   The other option is to pass a \code{dynamic} object as \code{patch_data},
+#'   in which case the set up will be the same as for \code{patch_data = NULL}
+#'   except that \code{population} will be a named vector of 0s, with the names
+#'   giving the states contained in the dynamic. This is what's used in
+#'   analysing a \code{dynamic} object without metapopulation structure.
 #' @examples
 #' # create a default patch
 #' patch <- patch(NULL)
@@ -34,8 +37,9 @@
 #'                     population = c(adult = 10, larva = 3, egg = 20),
 #'                     features = c(temperature = 10)))
 patch <- function (patch_data) {
-  switch(class(patch_data),
+  switch(class(patch_data)[1],
          NULL = patchDefault(),
+         dynamic = dynamicPatchDefault(patch_data),
          list = list2patch(patch_data))
 }
 
@@ -57,10 +61,11 @@ print.patch <- function(x, ...) {
   cat(text)
 }
 
-# accessor functions for patches
 #' @rdname patch
 #' @export
 #' @param patch an object of class \code{patch}
+#' @param value the value to assign to the \code{area}, \code{population}, or
+#'   \code{features} elements of \code{patch}
 #' @details the accessor functions \code{area}, \code{population} and
 #'   \code{features} either return or set the elements of the same name in a
 #'   \code{patch} object
@@ -177,9 +182,21 @@ as.patch <- function (x) {
   return (x)
 }
 
+# default standalone patch
 patchDefault <- function () {
   patch <- list(area = 1,
                 population = c(NULL = 0),
+                variables = c(NULL = 0))
+  patch <- as.patch(patch)
+  return (patch)
+}
+
+# default patch for a dynamic
+dynamicPatchDefault <- function (dynamic) {
+  population <- rep(0, length(dynamic$states))
+  names(population) <- dynamic$states
+  patch <- list(area = 1,
+                population = population,
                 variables = c(NULL = 0))
   patch <- as.patch(patch)
   return (patch)

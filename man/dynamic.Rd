@@ -5,6 +5,8 @@
 \alias{as.matrix.dynamic}
 \alias{dynamic}
 \alias{is.dynamic}
+\alias{landscape}
+\alias{landscape<-}
 \alias{plot.dynamic}
 \alias{print.dynamic}
 \title{dynamic objects}
@@ -17,6 +19,10 @@ is.dynamic(x)
 
 \method{plot}{dynamic}(x, ...)
 
+landscape(dynamic)
+
+landscape(dynamic) <- value
+
 \method{print}{dynamic}(x, ...)
 
 \method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), patch = NULL,
@@ -27,6 +33,10 @@ is.dynamic(x)
 an object to test as a dynamic object (for \code{is.dynamic}),}
 
 \item{y}{a dynamic object to be added to another}
+
+\item{dynamic}{an object of class \code{dynamic}}
+
+\item{value}{an object of class \code{patch}}
 
 \item{which}{which type of matrix to build: the overall population growth
 matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
@@ -51,6 +61,10 @@ creates a \code{dynamic} object, comprising multiple
   population viability etc.)
 }
 \details{
+The accessor function \code{landscape} either returns or sets the
+  landscape structure of the dynamic. Currently encoded as a
+  \code{\link{patch}} object
+
 If \code{patch = NULL}, a default patch is created using
   \code{patch(NULL)}, and used to construct the matrix (see
   \code{\link{patch}} for details of this default). This default may well not
