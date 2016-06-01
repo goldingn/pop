@@ -85,7 +85,7 @@ plot(recruitment); title(main = 'recruitment')
 
 These components aren't particularly useful on their own though, so we should combine them into one overall population dynamic:
 
-```{r all_dynamics, dpi = 300, set_xpd = TRUE}
+```{r all_dynamics, fig.height = 6, dpi = 300, set_xpd = TRUE}
 # note the careful order here to make sure eggs laid in one time step can't
 # pupate in the same timestep
 all <- dynamic(survival_egg,
@@ -102,7 +102,7 @@ plot(all)
 
 We can convert any of these objects into transition matrices, and analyse them deterministically using functions from other matrix population model packages, like `popbio` and `popdemo`:
 
-```{r popdemo}
+```{r popdemo, fig.height = 4, fig.width = 6, dpi = 300}
 A <- as.matrix(all)
 
 # estimate the intrinsic growth rate & stable stage distribution
@@ -118,7 +118,7 @@ plot(popdemo::project(A, population, time = 50))
 
 We can also use the function `simulation` to carry out discrete-time stochastic simulations from dynamic objects:
 
-```{r simulation, fig.height = 9, dpi = 300}
+```{r simulation, fig.height = 3, fig.width = 9, dpi = 300}
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
            population = population,
@@ -126,7 +126,7 @@ sim <- simulation(dynamic = all,
            replicates = 30)
 
 # plot abundance of the three life stages
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(sim)
 ```
 
@@ -136,7 +136,7 @@ plot(sim)
 
 We can use this functionality to update the above simulation analysis with density-dependent adult survival (see `?as.transfun` for details on how to define bespoke transition functions):
 
-```{r dd_function, fig.height = 9, dpi = 300}
+```{r dd_function, fig.height = 3, fig.width = 9, dpi = 300}
 # density-dependent adult survival function (patch is a required argument)
 ddfun <- function (patch) {
   adult_density <- population(patch, 'adults') / area(patch)
@@ -162,19 +162,19 @@ sim_dd <- simulation(dynamic = all_dd,
            replicates = 100)
 
 # and plot it
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(sim_dd)
 ```
 
 While we used the `popdemo` function `project` to make deterministic projections from the earlier density-*independent* model, that approach can't account for the effect of density dependence. Instead, we can use `pop`'s `projection` function to make deterministic density-dependent projections:
 
-```{r deterministic_dd,  fig.height = 9, dpi = 300}
+```{r deterministic_dd, fig.height = 3, fig.width = 9, dpi = 300}
 # project for 100 time steps
 proj_dd <- projection(dynamic = all_dd,
            population = population,
            timesteps = 100)
 
 # and plot it
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(proj_dd)
 ```

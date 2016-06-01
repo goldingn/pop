@@ -126,7 +126,7 @@ sim <- simulation(dynamic = all,
            replicates = 30)
 
 # plot abundance of the three life stages
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(sim)
 ```
 
@@ -164,7 +164,7 @@ sim_dd <- simulation(dynamic = all_dd,
            replicates = 100)
 
 # and plot it
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(sim_dd)
 ```
 
@@ -179,7 +179,7 @@ proj_dd <- projection(dynamic = all_dd,
            timesteps = 100)
 
 # and plot it
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 plot(proj_dd)
 ```
 
