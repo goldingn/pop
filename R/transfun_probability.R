@@ -37,7 +37,12 @@ is.probability <- function (x) inherits(x, 'probability')
 
 # unexported
 as.probability <- function (x) {
-  class(x) <- c('probability', 'transfun', class(x))
+  if (!is.transfun(x)) {
+    class(x) <- c('transfun', class(x))
+  }
+  if (!is.probability(x)) {
+    class(x) <- c('probability', class(x))
+  }
   return (x)
 }
 

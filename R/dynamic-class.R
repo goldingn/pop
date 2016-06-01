@@ -42,7 +42,7 @@ dynamic <- function (...) {
                  states = states)
 
   # set class and return
-  class(object) <- 'dynamic'
+  object <- as.dynamic(object)
   return (object)
 }
 
@@ -59,7 +59,9 @@ dynamic <- function (...) {
 is.dynamic <- function (x) inherits(x, 'dynamic')
 
 as.dynamic <- function (x) {
-  class(x) <- c(class(x), 'dynamic')
+  if (!is.dynamic(x)) {
+    class(x) <- c('dynamic', class(x))
+  }
   return (x)
 }
 

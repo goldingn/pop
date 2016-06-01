@@ -38,6 +38,11 @@ r <- rate
 is.rate <- function (x) inherits(x, 'rate')
 
 as.rate <- function (x) {
-  class(x) <- c('rate', 'transfun', class(x))
+  if (!is.transfun(x)) {
+    class(x) <- c('transfun', class(x))
+  }
+  if (!is.rate(x)) {
+    class(x) <- c('rate', class(x))
+  }
   return (x)
 }

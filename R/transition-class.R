@@ -33,7 +33,7 @@ transition <- function (formula, transfun) {
                  from = from,
                  transfun = transfun)
 
-  class(object) <- 'transition'
+  object <- as.transition(object)
   return (object)
 
 }
@@ -48,7 +48,9 @@ tr <- transition
 is.transition <- function (x) inherits(x, 'transition')
 
 as.transition <- function (x) {
-  class(x) <- c(class(x), 'transition')
+  if (!is.transition(x)) {
+    class(x) <- c('transition', class(x))
+  }
   return (x)
 }
 

@@ -313,6 +313,8 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
 }
 
 as.simulation <- function (x) {
-  class(x) <- c('simulation', class(x))
+  if (!is.simulation(x)) {
+    class(x) <- c('simulation', class(x))
+  }
   return (x)
 }
