@@ -8,11 +8,10 @@ as.transfun(fun, type = c("probability", "rate"))
 }
 \arguments{
 \item{fun}{an R function describing the transition. This must take only one
-argument: \dots, and return a single numeric value. The function may make
-use of a limited set of objects which will be passed via \dots. These are
-described in \code{details}}
+argument: \code{patch}, and return a single numeric value, see
+\code{details}.}
 
-\item{type}{what type of transition this function represents, a probabiltiy
+\item{type}{what type of transition this function represents, a probability
 or a rate}
 }
 \description{
@@ -20,26 +19,26 @@ A utility function to enable users to create bespoke transition
   functions (\code{transfun} objects) for use in \code{transition}s.
 }
 \details{
-\code{fun} must take only the argument \dots, but other objects may
-  be passed to the function via this argument. These objects are:
-  \code{population}, a named numeric vector giving the number of individuals
-  of each stage *within the patch*; \code{area} a single numeric value giving
-  the area of the patch in square kilometres; \code{features} a named numeric
-  vector containing miscellaneous features of the habitat patch, such and
-  measures of patch quality or environmental variables. See examples for an
-  illustration of how to these objects.
+\code{fun} must take only one argument, \code{patch}, an object of
+  class \code{\link{patch}}. \code{patch} objects contain three elements
+  which may be used in the function: \code{population}, a named numeric
+  vector giving the number of individuals of each stage *within the patch*;
+  \code{area}; a single numeric value giving the area of the patch in square
+  kilometres; and \code{features}, a named numeric vector containing
+  miscellaneous features of the habitat patch, such and measures of patch
+  quality or environmental variables. See examples for an illustration of how
+  to these objects.
 }
 \examples{
 # a very simple (and unnecessary, see ?p) transfun
-fun <- function(...) 0.3
+fun <- function(patch) 0.3
 prob0_3 <- as.transfun(fun, type = 'probability')
 
 # a density-dependent probability (population and area are passed via the
 # dots)
-dd_fun <- function (...) {
-    adult_density <- population['adult'] / area
-    p <- sqrt(1 / adult_density)
-    return (p)
+dd_fun <- function (patch) {
+    adult_density <- patch$population['adult'] / patch$area
+    sqrt(1 / adult_density)
 }
 dd_prob <- as.transfun(dd_fun, type = 'probability')
 
