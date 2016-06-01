@@ -20,7 +20,7 @@ rate <- function (value) {
   stopifnot(is.numeric(value))
   stopifnot(value > 0)
   stopifnot(is.finite(value))
-  f <- function() value
+  f <- function (...) value
   f <- as.rate(f)
   return (f)
 }

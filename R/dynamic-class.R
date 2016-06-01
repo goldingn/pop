@@ -316,12 +316,21 @@ transfun2text <- function (transfun) {
                    ' * ',
                    transfun2text(components[[2]]))
   } else {
+
+    # make a nice simple text representation
     prefix <- switch(type,
                      probability = 'p',
                      rate = 'r')
+
+    # don't try to find the expectation if it's user-defined
+    expect <- ifelse(containsUserTransfun(transfun),
+                     '?',
+                     round(expected(transfun), 2))
+
     text <- sprintf('%s(%s)',
                     prefix,
-                    round(expected(transfun), 2))
+                    expect)
+
   }
   return (text)
 }
