@@ -76,6 +76,7 @@ all <- dynamic(survival_egg,
                prob_laying * fecundity,
                pupation)
                
+par(mfrow = c(1, 2))
 plot(all)
 ```
 
