@@ -110,7 +110,7 @@ popbio::lambda(A)
     ##    770    178     52
 
 ``` r
-# plot predicted deterministic trajectory form this population
+# plot deterministic trajectory from this population
 plot(popdemo::project(A, population, time = 50))
 ```
 

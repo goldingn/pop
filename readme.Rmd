@@ -102,7 +102,7 @@ plot(all)
 
 We can convert any of these objects into transition matrices, and analyse them deterministically using functions from other matrix population model packages, like `popbio` and `popdemo`:
 
-```{r popdemo, fig.height = 4, fig.width = 6, dpi = 300}
+```{r popdemo, fig.height = 3, fig.width = 4, dpi = 300}
 A <- as.matrix(all)
 
 # estimate the intrinsic growth rate & stable stage distribution
@@ -112,7 +112,7 @@ popbio::lambda(A)
 # get a reasonable initial population
 (population <- round(ss * 1000))
 
-# plot predicted deterministic trajectory form this population
+# plot deterministic trajectory from this population
 plot(popdemo::project(A, population, time = 50))
 ```
 
