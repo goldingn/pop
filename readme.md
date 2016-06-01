@@ -103,14 +103,10 @@ popbio::lambda(A)
 
 ``` r
 # get a reasonable initial population
-(population <- round(ss * 1000))
-```
+population <- round(ss * 1000)
 
-    ##   eggs larvae adults 
-    ##    770    178     52
-
-``` r
 # plot deterministic trajectory from this population
+par(mfrow = c(1, 3))
 plot(popdemo::project(A, population, time = 50))
 ```
 
