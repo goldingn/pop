@@ -59,6 +59,9 @@ simulation <- function (dynamic, population, timesteps = 1, replicates = 1, ncor
   stopifnot(length(population) == length(dynamic$states))
   stopifnot(sort(names(population)) == sort(dynamic$states))
 
+  # update the dynamic's patch population with the requested starting population
+  population(landscape(dynamic)) <- population
+
   # if the number of cores is not defined, assume they want all of them
   if (is.null(ncores)) {
     ncores <- parallel::detectCores()
