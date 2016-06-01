@@ -28,7 +28,7 @@ First we define the different types of transitions between the states:
 # probability of staying in the same step between timesteps
 survival_egg <- tr(eggs ~ eggs, p(0.4))
 survival_larva <- tr(larvae ~ larvae, p(0.3))
-survival_adult <- tr(adults ~ adults, p(0.8))
+survival_adult <- tr(adults ~ adults, p(0.9))
 
 # probability of moving to the next state
 hatching <- tr(larvae ~ eggs, p(0.5))
@@ -92,18 +92,26 @@ A <- as.matrix(all)
 popbio::lambda(A)
 ```
 
-    ## [1] 1.023296
+    ## [1] 1.106324
 
 ``` r
 (ss <- popbio::stable.stage(A))
 ```
 
-    ##      eggs    larvae    adults 
-    ## 0.7553216 0.1928573 0.0518211
+    ##       eggs     larvae     adults 
+    ## 0.77041868 0.17785915 0.05172217
 
 ``` r
-# plot predicted deterministic trajectory
-plot(popdemo::project(A, ss * 1000, time = 50))
+# get a reasonable initial population
+(population <- round(ss * 1000))
+```
+
+    ##   eggs larvae adults 
+    ##    770    178     52
+
+``` r
+# plot predicted deterministic trajectory form this population
+plot(popdemo::project(A, population, time = 50))
 ```
 
 ![](readme_files/figure-markdown_github/popdemo-1.png)<!-- -->
@@ -111,20 +119,11 @@ plot(popdemo::project(A, ss * 1000, time = 50))
 We can also use the function `simulation` to carry out discrete-time stochastic simulations from dynamic objects:
 
 ``` r
-# define the starting population as a named integer vector
-(population <- round(ss * 1000))
-```
-
-    ##   eggs larvae adults 
-    ##    755    193     52
-
-``` r
 # simulate 30 times for 50 generations each
 sim <- simulation(dynamic = all,
            population = population,
            timesteps = 50,
-           replicates = 30,
-           ncores = 1)
+           replicates = 30)
 
 # plot abundance of the three life stages
 par(mfrow = c(3, 1))
@@ -132,3 +131,39 @@ plot(sim)
 ```
 
 ![](readme_files/figure-markdown_github/simulation-1.png)<!-- -->
+
+`pop` now support user-defined transition functions, where the parameter may depend on other things, like the population size, patch area or other environmental drivers.
+
+We can use this functionality to update the above simulation analysis with density-dependent adult survival (see `?as.transfun` for details on how to define bespoke transition functions):
+
+``` r
+# density-dependent adult survival function (patch is a required argument)
+ddfun <- function (patch) {
+  adult_density <- population(patch, 'adults') / area(patch)
+  0.9 * exp(-adult_density / 1000)
+}
+
+# turn it into a transfun object
+dd <- as.transfun(ddfun, type = 'probability')
+
+# use it in a transition and update the dynamic
+survival_adult_dd <- tr(adults ~ adults, dd)
+all_dd <- dynamic(survival_egg,
+                  survival_larva,
+                  survival_adult_dd,
+                  hatching,
+                  prob_laying * fecundity,
+                  pupation)
+
+# run the simulation (a little longer and with more simulations this time)
+sim_dd <- simulation(dynamic = all_dd,
+           population = population,
+           timesteps = 100,
+           replicates = 100)
+
+# and plot it
+par(mfrow = c(3, 1))
+plot(sim_dd)
+```
+
+![](readme_files/figure-markdown_github/dd_function-1.png)<!-- -->
