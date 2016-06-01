@@ -89,17 +89,30 @@ area <- function (patch) {
   return(patch)
 }
 
-#' @rdname patch
-#' @export
+#'@rdname patch
+#'@param states an optional character vector naming the states for which the
+#'  populations are required
+#'@export
 #' @examples
 #'# get and set the population
 #' population(patch)
 #' population(patch) <- population(patch) * 2
 #' population(patch)
 #'
-population <- function (patch) {
+population <- function (patch, states = NULL) {
   stopifnot(is.patch(patch))
-  return(patch$population)
+
+  # extract the population
+  pop <- patch$population
+
+  # if which speecified, get those elements
+  if (!is.null(states)) {
+    stopifnot(all(states %in% names(patch$population)))
+    pop <- pop[states]
+  }
+
+  # return the requested populations
+  return (pop)
 }
 
 #' @rdname patch

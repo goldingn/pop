@@ -22,7 +22,7 @@ area(patch)
 
 area(patch) <- value
 
-population(patch)
+population(patch, states = NULL)
 
 population(patch) <- value
 
@@ -41,6 +41,9 @@ though more approaches will be added in the future}
 
 \item{value}{the value to assign to the \code{area}, \code{population}, or
 \code{features} elements of \code{patch}}
+
+\item{states}{an optional character vector naming the states for which the
+populations are required}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
