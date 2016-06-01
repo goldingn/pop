@@ -168,12 +168,13 @@ plot(sim_dd)
 
 While we used the `popdemo` function `project` to make deterministic projections from the earlier density-*independent* model, that approach can't account for the effect of density dependence. Instead, we can use `pop`'s `projection` function to make deterministic density-dependent projections:
 
-```{r deterministic_dd,  fig.height = 9, dpi = 30}
+```{r deterministic_dd,  fig.height = 9, dpi = 300}
+# project for 100 time steps
 proj_dd <- projection(dynamic = all_dd,
            population = population,
            timesteps = 100)
 
 # and plot it
 par(mfrow = c(3, 1))
-pop:::plot.projection(proj_dd)
+plot(proj_dd)
 ```

@@ -10,7 +10,7 @@
 #'   individuals in each state of \code{dynamic}
 #' @param timesteps a positive integer giving the number of time steps
 #'   (iterations) over which to simulate the model
-#' @return an object of class \code{projection}
+#' @return an object of class \code{pop_projection}
 #' @export
 #' @examples
 #' # set up a three-stage model
@@ -76,19 +76,19 @@ projection <- function (dynamic, population, timesteps = 1) {
   # return simulations ina pop_simulation object
   result <- list(dynamic = dynamic,
                  projection = result)
-  result <- as.projection(result)
+  result <- as.pop_projection(result)
   return (result)
 
 }
 
 #' @rdname projection
-#' @param x a \code{projection} object, or an object to be tested as one
+#' @param x a \code{pop_projection} object, or an object to be tested as one
 #' @export
 #' @examples
-#' is.projection(proj)
+#' is.pop_projection(proj)
 #'
-is.projection <- function (x) {
-  inherits(x, 'projection')
+is.pop_projection <- function (x) {
+  inherits(x, 'pop_projection')
 }
 
 #' @rdname projection
@@ -100,7 +100,7 @@ is.projection <- function (x) {
 #' @examples
 #' par(mfrow = c(3, 1))
 #' plot(proj)
-plot.projection <- function (x, states = NULL, ...) {
+plot.pop_projection <- function (x, states = NULL, ...) {
 
   # get states if they aren't specified
   if (is.null(states)) states <- x$dynamic$states
@@ -138,9 +138,9 @@ plot.projection <- function (x, states = NULL, ...) {
 
 }
 
-as.projection <- function (x) {
-  if (!is.projection(x)) {
-    class(x) <- c('projection', class(x))
+as.pop_projection <- function (x) {
+  if (!is.pop_projection(x)) {
+    class(x) <- c('pop_projection', class(x))
   }
   return (x)
 }
