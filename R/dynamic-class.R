@@ -132,30 +132,50 @@ print.dynamic <- function (x, ...) {
 #'   matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
 #'   fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
 #'   (\code{'R'})
+#' @param patch an optional \code{patch} object providing details on the patch
+#'   in which the dynamic is being evaluated. If the default of \code{patch =
+#'   NULL} is specified, a 'default' patch is used.
 #' @export
+#' @details If \code{patch = NULL}, a default patch is created using
+#'   \code{patch(NULL)}, and used to construct the matrix (see
+#'   \code{\link{patch}} for details of this default). This default may well not
+#'   contain sufficient information to evaluate the matrix (since the required
+#'   features, or populations of life stages in the dynamic may not be present).
+#'   If the dynamic contains a user-defined transition function, and
+#'   \code{patch} is left at it's default, a message is issued reminding the
+#'   user of this (they may also get an error shortly after)
 #' @importFrom MASS ginv
 #' @examples
 #' # convert to a transition matrix
 #' as.matrix(all)
-as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
+as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), patch = NULL, ...) {
 
   user_defined <- sapply(x$transitions,
                          function (z) containsUserTransfun(z$transfun))
 
-  if(any(user_defined)) {
-    message ('this dynamic contains transitions with user-defined transfun objects.
-             To construct the matrix, you may need to provide one or more of the required arguments: population, area and features.
-             See ?as.transfun for details')
+  # if a default patch is required, get one
+  if (is.null(patch)) {
+    patch <- patch(NULL)
+
+    # if there's also a user-defined transition, let them know it might break
+    if(any(user_defined)) {
+      message ('This dynamic contains transitions with user-defined transfun objects.
+               To construct the matrix, you may need to provide an appropriate patch object.
+               See ?as.transfun for details')
+    }
+
   }
+
+
 
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
   mat <- switch(which,
-                `A` = getA(x),
-                `P` = getP(x),
-                `F` = getF(x),
-                `R` = getR(x))
+                `A` = getA(x, patch),
+                `P` = getP(x, patch),
+                `F` = getF(x, patch),
+                `R` = getR(x, patch))
 
   # set class and return
   class(mat) <- c(class(mat), 'transition_matrix')
@@ -163,7 +183,7 @@ as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
 }
 
-getA <- function (x) {
+getA <- function (x, patch) {
 
   # get the full population projection matrix from a dynamic
   # set up empty matrix
@@ -174,7 +194,7 @@ getA <- function (x) {
   for (t in x$transitions) {
 
     # get the expectation
-    expectation <- expected(t$transfun)
+    expectation <- expected(t$transfun, patch)
 
     # if it's a rate (or compound containing a rate)
     if (containsRate(t$transfun)) {
@@ -219,17 +239,17 @@ getA <- function (x) {
 
 }
 
-getR <- function (x) {
+getR <- function (x, patch) {
   # get the reproduction matrix from a dynamic;
   # combine P & F accounting for clonal
   # reproduction (rates on diagonal)
-  P <- getP(x)
+  P <- getP(x, patch)
   eye <- diag(nrow(P))
-  mat <- getF(x) %*% ginv(eye - P)
+  mat <- getF(x, patch) %*% ginv(eye - P)
   return (mat)
 }
 
-getF <- function (x) {
+getF <- function (x, patch) {
 
   # set up empty matrix
   mat <- diag(length(x$states)) * 0
@@ -242,7 +262,7 @@ getF <- function (x) {
     if (containsRate(t$transfun)) {
 
       # get the expectation and add it in
-      expectation <- expected(t$transfun)
+      expectation <- expected(t$transfun, patch)
       mat[t$to, t$from] <-  expectation
 
     }
@@ -253,7 +273,7 @@ getF <- function (x) {
 
 }
 
-getP <- function (x) {
+getP <- function (x, patch) {
 
   # set up empty matrix
   mat <- diag(length(x$states))
@@ -266,7 +286,7 @@ getP <- function (x) {
     if (!containsRate(t$transfun)) {
 
       # get the expectation
-      expectation <- expected(t$transfun)
+      expectation <- expected(t$transfun, patch)
 
       if (t$to == t$from) {
         # if it's the diagonal, multiply by the expectation

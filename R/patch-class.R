@@ -139,7 +139,7 @@ populationCheck <- function (population) {
   stopifnot(is.numeric(population))
   stopifnot(!is.null(names(population)))
   stopifnot(all(is.finite(population)))
-  stopifnot(all(population > 0))
+  stopifnot(all(population >= 0))
 }
 
 featuresCheck <- function (features) {
