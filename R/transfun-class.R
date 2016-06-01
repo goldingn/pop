@@ -43,17 +43,22 @@ print.transfun <- function(x, ...) {
     text <- sprintf('user-specified %s transfun',
                     transfunType(x))
   } else {
+    patch <- patch(NULL)
     text <- sprintf('%s transfun with expectation %s\n',
                     transfunType(x),
-                    expected(x, ...))
+                    expected(x, patch))
   }
 
   cat(text)
 }
 
+is.compound <- function (x) inherits(x, 'compound')
+
 as.compound <- function (x) {
-  # define a compoud transfun class
-  class(x) <- c('compound', 'transfun', class(x))
+  # define a compound transfun class
+  if (!is.compound(x)) {
+    class(x) <- c('compound', 'transfun', class(x))
+  }
   return (x)
 }
 
@@ -74,21 +79,21 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function () list(x, y)
+  z <- function (...) list(x, y)
   z <- as.compound(z)
   return (z)
 }
 
 # add expectation function to grab expectations from transfuns for as.matrix
-expected <- function (transfun, ...) {
+expected <- function (transfun, patch) {
   # get transfun type, if it's a compound, call expectation recursively
   type <- transfunType(transfun)
   if (type == 'compound') {
     # expand and get sub-expectations
     components <- transfun()
-    expect <- expected(components[[1]], ...) * expected(components[[2]], ...)
+    expect <- expected(components[[1]], patch) * expected(components[[2]], patch)
   } else {
-    expect <- transfun(...)
+    expect <- transfun(patch)
   }
   return (expect)
 }
@@ -98,31 +103,30 @@ expected <- function (transfun, ...) {
 #' @description A utility function to enable users to create bespoke transition
 #'   functions (\code{transfun} objects) for use in \code{transition}s.
 #' @param fun an R function describing the transition. This must take only one
-#'   argument: \dots, and return a single numeric value. The function may make
-#'   use of a limited set of objects which will be passed via \dots. These are
-#'   described in \code{details}
-#' @param type what type of transition this function represents, a probabiltiy
+#'   argument: \code{patch}, and return a single numeric value, see
+#'   \code{details}.
+#' @param type what type of transition this function represents, a probability
 #'   or a rate
-#' @details \code{fun} must take only the argument \dots, but other objects may
-#'   be passed to the function via this argument. These objects are:
-#'   \code{population}, a named numeric vector giving the number of individuals
-#'   of each stage *within the patch*; \code{area} a single numeric value giving
-#'   the area of the patch in square kilometres; \code{features} a named numeric
-#'   vector containing miscellaneous features of the habitat patch, such and
-#'   measures of patch quality or environmental variables. See examples for an
-#'   illustration of how to these objects.
+#' @details \code{fun} must take only one argument, \code{patch}, an object of
+#'   class \code{\link{patch}}. \code{patch} objects contain three elements
+#'   which may be used in the function: \code{population}, a named numeric
+#'   vector giving the number of individuals of each stage *within the patch*;
+#'   \code{area}; a single numeric value giving the area of the patch in square
+#'   kilometres; and \code{features}, a named numeric vector containing
+#'   miscellaneous features of the habitat patch, such and measures of patch
+#'   quality or environmental variables. See examples for an illustration of how
+#'   to these objects.
 #' @export
 #' @examples
 #' # a very simple (and unnecessary, see ?p) transfun
-#' fun <- function(...) 0.3
+#' fun <- function(patch) 0.3
 #' prob0_3 <- as.transfun(fun, type = 'probability')
 #'
 #' # a density-dependent probability (population and area are passed via the
 #' # dots)
-#' dd_fun <- function (...) {
-#'     adult_density <- population['adult'] / area
-#'     p <- sqrt(1 / adult_density)
-#'     return (p)
+#' dd_fun <- function (patch) {
+#'     adult_density <- patch$population['adult'] / patch$area
+#'     sqrt(1 / adult_density)
 #' }
 #' dd_prob <- as.transfun(dd_fun, type = 'probability')
 #'
@@ -137,8 +141,8 @@ as.transfun <- function (fun, type = c('probability', 'rate')) {
 
   # check dots is the only argument
   args <- names(formals(fun))
-  if (length(args) != 1 && args != '...') {
-    stop ("transfun objects must only take the dots argument: '...'
+  if (length(args) != 1 && args != 'patch') {
+    stop ("transfun objects must only take the argument 'patch'
           see ?as.transfun for details and examples")
   }
 
