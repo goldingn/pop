@@ -48,12 +48,12 @@ test_that('stochastic analyses work', {
 
   # each should have the right number of states
   cols <- sapply(sim$simulations, ncol)
-  expect_true(all(cols == length(all$states)))
+  expect_true(all(cols == length(states(all))))
 
   # check we get errors for dodgy inputs
 
   # for a transition instead of a dynamic
-  expect_error(simulation(dynamic = all$transitions[[1]],
+  expect_error(simulation(dynamic = all[[1]],
                           population = population,
                           timesteps = 50,
                           replicates = 30))

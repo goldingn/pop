@@ -134,10 +134,10 @@ plot.simulation <- function (x, states = NULL, ...) {
   # state gives the name of the state to plot (by default all of them, in separate plots)
 
   # get states if they aren't specified
-  if (is.null(states)) states <- x$dynamic$states
+  if (is.null(states)) states <- states(x$dynamic)
 
   # check they're sane
-  stopifnot(states %in% x$dynamic$states)
+  stopifnot(states %in% states(x$dynamic))
 
   # object to store the results in
   result <- list()
