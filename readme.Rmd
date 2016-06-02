@@ -86,14 +86,14 @@ plot(recruitment); title(main = 'recruitment')
 These components aren't particularly useful on their own though, so we should combine them into one overall population dynamic:
 
 ```{r all_dynamics, fig.height = 4.5, fig.width = 9, dpi = 300, set_xpd = TRUE}
-# note the careful order here to make sure eggs laid in one time step can't
-# pupate in the same timestep
+# note that the order here determines the order in which transitions occur, so
+# may influence the dynamics.
 all <- dynamic(survival_egg,
                survival_larva,
                survival_adult,
+               pupation,
                hatching,
-               prob_laying * fecundity,
-               pupation)
+               prob_laying * fecundity)
                
 par(mfrow = c(1, 2))
 plot(all)
