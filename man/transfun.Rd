@@ -4,6 +4,7 @@
 \alias{*.transfun}
 \alias{is.transfun}
 \alias{parameters}
+\alias{parameters<-}
 \alias{print.transfun}
 \alias{transfun}
 \title{transfun objects}
@@ -15,12 +16,16 @@ is.transfun(x)
 \method{*}{transfun}(x, y)
 
 parameters(x)
+
+parameters(x) <- value
 }
 \arguments{
 \item{x}{a transfun object to print or an object to test as a transfun object}
 
 \item{y}{a transfun object to be multiplied with another with the same
 pathway}
+
+\item{value}{a named list of parameters matching those set for \code{x}}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -44,8 +49,13 @@ prob
 (compound <- prob * r(4.3))
 
 # extract the transfun parameters
+(param_prob <- parameters(prob))
+(param_compound <- parameters(compound))
+
+# update the parameters of these transfuns
+param_prob$p <- 0.6
+parameters(prob) <- param_prob
 parameters(prob)
-parameters(compound)
 
 }
 

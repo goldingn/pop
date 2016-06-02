@@ -195,8 +195,8 @@ containsUserTransfun <- function (transfun) {
 #' @export
 #' @examples
 #' # extract the transfun parameters
-#' parameters(prob)
-#' parameters(compound)
+#' (param_prob <- parameters(prob))
+#' (param_compound <- parameters(compound))
 #'
 parameters <- function (x) {
   if (is.compound(x)) {
@@ -206,4 +206,42 @@ parameters <- function (x) {
     param <- environment(x)$param
   }
   return (param)
+}
+
+#' @rdname transfun
+#' @export
+#' @param value a named list of parameters matching those set for \code{x}
+#' @examples
+#' # update the parameters of these transfuns
+#' param_prob$p <- 0.6
+#' parameters(prob) <- param_prob
+#' parameters(prob)
+#'
+`parameters<-` <- function (x, value) {
+
+  # check new parameters
+  parametersCheck(value, x)
+
+  # if that worked, define param and fun here
+  param <- value
+  environment(x) <- environment()
+
+  return (x)
+}
+
+
+parametersCheck <- function (param, transfun = NULL) {
+
+  # check incoming parameters make sense
+  stopifnot(is.list(param))
+  stopifnot(all(sapply(param, is.finite)))
+  stopifnot(all(sapply(param, is.numeric)))
+
+  if (!is.null(transfun)) {
+    # check they match the transfun
+    old_param <- parameters(transfun)
+    stopifnot(all.equal(names(param), names(old_param)))
+    stopifnot(length(param) == length(old_param))
+  }
+
 }
