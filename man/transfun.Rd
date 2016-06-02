@@ -3,6 +3,7 @@
 \name{transfun}
 \alias{*.transfun}
 \alias{is.transfun}
+\alias{parameters}
 \alias{print.transfun}
 \alias{transfun}
 \title{transfun objects}
@@ -12,6 +13,8 @@ is.transfun(x)
 \method{print}{transfun}(x, ...)
 
 \method{*}{transfun}(x, y)
+
+parameters(x)
 }
 \arguments{
 \item{x}{a transfun object to print or an object to test as a transfun object}
@@ -39,6 +42,10 @@ is.transfun(prob)
 
 prob
 (compound <- prob * r(4.3))
+
+# extract the transfun parameters
+parameters(prob)
+parameters(compound)
 
 }
 

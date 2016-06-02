@@ -189,3 +189,21 @@ containsUserTransfun <- function (transfun) {
   return (ans)
 
 }
+
+#' @rdname transfun
+#' @name parameters
+#' @export
+#' @examples
+#' # extract the transfun parameters
+#' parameters(prob)
+#' parameters(compound)
+#'
+parameters <- function (x) {
+  if (is.compound(x)) {
+    components <- x()
+    param <- c(parameters(components[[1]]), parameters(components[[2]]))
+  } else {
+    param <- environment(x)$param
+  }
+  return (param)
+}
