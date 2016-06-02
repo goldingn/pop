@@ -4,12 +4,15 @@
 \alias{as.transfun}
 \title{create a transition function}
 \usage{
-as.transfun(fun, type = c("probability", "rate"))
+as.transfun(fun, param, type = c("probability", "rate"))
 }
 \arguments{
 \item{fun}{an R function describing the transition. This must take only one
-argument: \code{landscape}, and return a numeric vector, see
-\code{details}.}
+argument: \code{landscape} and return a numeric vector (see
+\code{details}).}
+
+\item{param}{a named list of the parameters of \code{fun} (see
+\code{details}).}
 
 \item{type}{what type of transition this function represents, a probability
 or a rate}
@@ -27,20 +30,27 @@ A utility function to enable users to create bespoke transition
   square kilometres; and \code{features}, a dataframe containing
   miscellaneous features (columns) of each habitat patch (rows), such as
   measures of patch quality or environmental variables. See examples for an
-  illustration of how to these objects.
+  illustration of how to these objects. Parameters of the transfun should be
+  passed to \code{as.transfun} as a named list. These can then be used in
+  \code{fun} by accessing them from this list. Note that \code{param} isn't
+  an argument to \code{fun}, instead it's modified directly in the function's
+  envirnment (because \emph{reasons}).
 }
 \examples{
 # a very simple (and unnecessary, see ?p) transfun
-fun <- function(landscape) 0.3
-prob0_3 <- as.transfun(fun, type = 'probability')
+fun <- function(landscape) param$prob
+prob <- as.transfun(fun, param = c(prob = 0.3), type = 'probability')
 
 # a density-dependent probability
 dd_fun <- function (landscape) {
     adult_density <- population(landscape, 'adult') / area(landscape)
-    sqrt(1 / adult_density)
+    param$p * exp(- adult_density/param$range)
 }
-dd_prob <- as.transfun(dd_fun, type = 'probability')
 
+dd_prob <- as.transfun(dd_fun,
+                       param = list(p = 0.8,
+                                    range = 10),
+                       type = 'probability')
 
 }
 

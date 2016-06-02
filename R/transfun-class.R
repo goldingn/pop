@@ -103,8 +103,10 @@ expected <- function (transfun, landscape) {
 #' @description A utility function to enable users to create bespoke transition
 #'   functions (\code{transfun} objects) for use in \code{transition}s.
 #' @param fun an R function describing the transition. This must take only one
-#'   argument: \code{landscape}, and return a numeric vector, see
-#'   \code{details}.
+#'   argument: \code{landscape} and return a numeric vector (see
+#'   \code{details}).
+#' @param param a named list of the parameters of \code{fun} (see
+#'   \code{details}).
 #' @param type what type of transition this function represents, a probability
 #'   or a rate
 #' @details \code{fun} must take only one argument, \code{landscape}, an object
@@ -115,22 +117,29 @@ expected <- function (transfun, landscape) {
 #'   square kilometres; and \code{features}, a dataframe containing
 #'   miscellaneous features (columns) of each habitat patch (rows), such as
 #'   measures of patch quality or environmental variables. See examples for an
-#'   illustration of how to these objects.
+#'   illustration of how to these objects. Parameters of the transfun should be
+#'   passed to \code{as.transfun} as a named list. These can then be used in
+#'   \code{fun} by accessing them from this list. Note that \code{param} isn't
+#'   an argument to \code{fun}, instead it's modified directly in the function's
+#'   envirnment (because \emph{reasons}).
 #' @export
 #' @examples
 #' # a very simple (and unnecessary, see ?p) transfun
-#' fun <- function(landscape) 0.3
-#' prob0_3 <- as.transfun(fun, type = 'probability')
+#' fun <- function(landscape) param$prob
+#' prob <- as.transfun(fun, param = c(prob = 0.3), type = 'probability')
 #'
 #' # a density-dependent probability
 #' dd_fun <- function (landscape) {
 #'     adult_density <- population(landscape, 'adult') / area(landscape)
-#'     sqrt(1 / adult_density)
+#'     param$p * exp(- adult_density/param$range)
 #' }
-#' dd_prob <- as.transfun(dd_fun, type = 'probability')
 #'
+#' dd_prob <- as.transfun(dd_fun,
+#'                        param = list(p = 0.8,
+#'                                     range = 10),
+#'                        type = 'probability')
 #'
-as.transfun <- function (fun, type = c('probability', 'rate')) {
+as.transfun <- function (fun, param, type = c('probability', 'rate')) {
 
   # line up the transfun type
   type <- match.arg(type)
@@ -138,12 +147,16 @@ as.transfun <- function (fun, type = c('probability', 'rate')) {
   # check it's a function
   stopifnot(is.function(fun))
 
-  # check dots is the only argument
+  # check landscape is the only argument
   args <- names(formals(fun))
   if (length(args) != 1 && args != 'landscape') {
     stop ("transfun objects must only take the argument 'landscape'
           see ?as.transfun for details and examples")
   }
+
+  # define parameters and fun here so fun can see param
+  param <- param
+  environment(fun) <- environment()
 
   # assign type and return
   fun <- switch(type,
