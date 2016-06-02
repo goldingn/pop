@@ -140,13 +140,16 @@ We can use this functionality to update the above simulation analysis with densi
 
 ```{r dd_function, fig.height = 3, fig.width = 9, dpi = 300}
 # density-dependent adult survival function (patch is a required argument)
-ddfun <- function (patch) {
-  adult_density <- population(patch, 'adults') / area(patch)
-  0.9 * exp(-adult_density / 1000)
+ddfun <- function (landscape) {
+  adult_density <- population(landscape, 'adults') / area(landscape)
+  param$p * exp(-adult_density / param$area)
 }
 
 # turn it into a transfun object
-dd <- as.transfun(ddfun, type = 'probability')
+dd <- as.transfun(ddfun,
+                  param = list(p = 0.9,
+                               area = 1000),
+                  type = 'probability')
 
 # use it in a transition and update the dynamic
 survival_adult_dd <- tr(adults ~ adults, dd)
