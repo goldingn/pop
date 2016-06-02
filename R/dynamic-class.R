@@ -37,7 +37,7 @@ dynamic <- function (...) {
   # dynamical system
 
   # capture objects
-  object <- list(...)
+  object <- captureDots(...)
 
   # check they're transitions
   stopifnot(all(sapply(object, is.transition)))
@@ -127,8 +127,9 @@ states <- function (x) {
 # dynamic composition functions
 
 add.dynamic <- function (dynamic1, dynamic2) {
-  transitions <- c(dynamic1, dynamic2)
-  dynamic <- do.call(dynamic, transitions)
+  dynamic <- c(dynamic1, dynamic2)
+  dynamic <- as.dynamic(dynamic)
+  landscape(dynamic) <- as.landscape(dynamic)
   return (dynamic)
 }
 

@@ -36,3 +36,13 @@ expandPopulation <- function (population, dynamic) {
   return (population)
 
 }
+
+
+captureDots <- function (...) {
+  # capture arguments passed as dots, and grab their names even if not directly
+  # named
+  ans <- list(...)
+  dots <- substitute(list(...))[-1]
+  names(ans) <- sapply(dots, deparse)
+  ans
+}
