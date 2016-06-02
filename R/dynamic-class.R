@@ -36,12 +36,13 @@ dynamic <- function (...) {
   # given a bunch of transition functions, build an object representing a
   # dynamical system
 
-  transitions <- list(...)
-  states <- getStates(transitions)
-  object <- list(transitions = transitions,
-                 states = states)
+  # capture objects
+  object <- list(...)
 
-  # set class and return
+  # check they're transitions
+  stopifnot(all(sapply(object, is.transition)))
+
+  # set class, add default landscape and return
   object <- as.dynamic(object)
   landscape(object) <- as.landscape(object)
   return (object)
@@ -111,11 +112,22 @@ plot.dynamic <- function (x, ...) {
 
 }
 
+#' @rdname dynamic
+#' @name states
+#' @export
+#' @examples
+#' # get component states
+#' states(all)
+#'
+states <- function (x) {
+  getStates(x)
+}
+
 # ~~~~~~~
 # dynamic composition functions
 
 add.dynamic <- function (dynamic1, dynamic2) {
-  transitions <- c(dynamic1$transitions, dynamic2$transitions)
+  transitions <- c(dynamic1, dynamic2)
   dynamic <- do.call(dynamic, transitions)
   return (dynamic)
 }
@@ -125,9 +137,10 @@ add.dynamic <- function (dynamic1, dynamic2) {
 #' @examples
 #' # print method
 #' print(all)
+#'
 print.dynamic <- function (x, ...) {
   text <- sprintf('dynamic:\ttransitions between: %s\n',
-                  paste(x$states, collapse = ', '))
+                  paste(states(x), collapse = ', '))
   cat(text)
 }
 
@@ -143,7 +156,7 @@ print.dynamic <- function (x, ...) {
 #' as.matrix(all)
 as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
-  user_defined <- sapply(x$transitions,
+  user_defined <- sapply(x,
                          function (z) containsUserTransfun(z$transfun))
 
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
@@ -165,12 +178,12 @@ getA <- function (x) {
 
   # get the full population projection matrix from a dynamic
   # set up empty matrix
-  mat <- diag(length(x$states))
-  rownames(mat) <- colnames(mat) <- x$states
+  mat <- diag(length(states(x)))
+  rownames(mat) <- colnames(mat) <- states(x)
   landscape <- landscape(x)
 
   # apply the transitions
-  for (t in x$transitions) {
+  for (t in x) {
 
     # get the expectation
     expectation <- expected(t$transfun, landscape)
@@ -231,12 +244,12 @@ getR <- function (x) {
 getF <- function (x) {
 
   # set up empty matrix
-  mat <- diag(length(x$states)) * 0
-  rownames(mat) <- colnames(mat) <- x$states
+  mat <- diag(length(states(x))) * 0
+  rownames(mat) <- colnames(mat) <- states(x)
   landscape <- landscape(x)
 
   # apply the transitions
-  for (t in x$transitions) {
+  for (t in x) {
 
     # if it's a rate (or compound containing a rate)
     if (containsRate(t$transfun)) {
@@ -256,12 +269,12 @@ getF <- function (x) {
 getP <- function (x) {
 
   # set up empty matrix
-  mat <- diag(length(x$states))
-  rownames(mat) <- colnames(mat) <- x$states
+  mat <- diag(length(states(x)))
+  rownames(mat) <- colnames(mat) <- states(x)
   landscape <- landscape(x)
 
   # apply the transitions
-  for (t in x$transitions) {
+  for (t in x) {
 
     # if it's not a rate (nor compound containing a rate)
     if (!containsRate(t$transfun)) {
@@ -309,9 +322,10 @@ containsRate <- function (transfun) {
 
 # create a matrix contining text reporting the transition
 textMatrix <- function (x) {
-  mat <- matrix('', length(x$states), length(x$states))
-  rownames(mat) <- colnames(mat) <- x$states
-  for (t in x$transitions) {
+  states <- states(x)
+  mat <- matrix('', length(states), length(states))
+  rownames(mat) <- colnames(mat) <- states
+  for (t in x) {
     mat[t$to, t$from] <- transfun2text(t$transfun)
   }
   return (mat)

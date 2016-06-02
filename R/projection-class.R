@@ -54,9 +54,9 @@ projection <- function (dynamic, population, timesteps = 1) {
   # set up results matrix
   result <- matrix(NA,
                    nrow = timesteps + 1,
-                   ncol = length(dynamic$states))
+                   ncol = length(states(dynamic)))
   rownames(result) <- 0:timesteps
-  colnames(result) <- dynamic$states
+  colnames(result) <- states(dynamic)
 
   # add population to first row
   result[1, ] <- as.numeric(population)
@@ -108,10 +108,10 @@ is.pop_projection <- function (x) {
 plot.pop_projection <- function (x, states = NULL, ...) {
 
   # get states if they aren't specified
-  if (is.null(states)) states <- x$dynamic$states
+  if (is.null(states)) states <- states(x$dynamic)
 
   # check they're sane
-  stopifnot(states %in% x$dynamic$states)
+  stopifnot(states %in% states(x$dynamic))
 
   # plot them one at a time
   for (state in states) {

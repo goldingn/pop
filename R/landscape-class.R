@@ -234,8 +234,8 @@ landscapeDefault <- function () {
 
 # default landscape for a dynamic
 dynamicLandscapeDefault <- function (dynamic) {
-  population <- as.list(rep(0, length(dynamic$states)))
-  names(population) <- dynamic$states
+  population <- as.list(rep(0, length(states(dynamic))))
+  names(population) <- states(dynamic)
   population <- as.data.frame(population)
   landscape <- list(area = 1,
                 population = population,

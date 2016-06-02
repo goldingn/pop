@@ -9,12 +9,14 @@ getStates <- function (transitions) {
 }
 
 expandPopulation <- function (population, dynamic) {
+
   # convert the population to a dataframe if required
   if (!is.data.frame(population)) {
 
     # check the population vector makes sense
     stopifnot(is.numeric(population))
-    stopifnot(length(population) == length(dynamic$states))
+    stopifnot(length(population) == length(states(dynamic)))
+    stopifnot(all(sort(names(population)) == sort(states(dynamic))))
 
     # make it into a dataframe
     names <- names(population)
@@ -25,6 +27,8 @@ expandPopulation <- function (population, dynamic) {
 
   # if it's a one-row dataframe, replicate for the number of habitat patches
   if (nrow(population) == 1) {
+    stopifnot(ncol(population) == length(states(dynamic)))
+    stopifnot(all(sort(names(population)) == sort(states(dynamic))))
     n_patches <- nrow(population(landscape(dynamic)))
     population <- population[rep(1, n_patches), ]
   }

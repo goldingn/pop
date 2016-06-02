@@ -7,6 +7,7 @@
 \alias{is.dynamic}
 \alias{plot.dynamic}
 \alias{print.dynamic}
+\alias{states}
 \title{dynamic objects}
 \usage{
 dynamic(...)
@@ -16,6 +17,8 @@ dynamic(...)
 is.dynamic(x)
 
 \method{plot}{dynamic}(x, ...)
+
+states(x)
 
 \method{print}{dynamic}(x, ...)
 
@@ -71,8 +74,12 @@ plot(stasis)
 plot(growth)
 plot(all)
 
+# get component states
+states(all)
+
 # print method
 print(all)
+
 # convert to a transition matrix
 as.matrix(all)
 }
