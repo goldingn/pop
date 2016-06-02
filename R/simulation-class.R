@@ -6,13 +6,14 @@
 #' @description Simulate a population dynamic model in discrete time, recording
 #'   the number of individuals in each state at each time point.
 #' @param dynamic a population dynamic model of class \code{\link{dynamic}}
-#' @param population a dataframe of positive integers, giving the number of
-#'   individuals in each state of \code{dynamic}. This dataframe should have
-#'   only one row (as in the examples below), or as many rows as patches in the
-#'   metapopulation, if a multi-patch landscape  has been defined for
-#'   \code{dynamic} (using \code{\link{landscape}}). If a multi-patch landscape
-#'   has been defined for \code{dynamic}, but \code{population} has only one
-#'   row, this population will be duplicated for all patches in the landscape.
+#' @param population a dataframe or named vector of positive integers, giving
+#'   the number of individuals in each state of \code{dynamic}. If a dataframe,
+#'   it should have only one row (as in the examples below), or as many rows as
+#'   patches in the metapopulation if a multi-patch landscape has been defined
+#'   for \code{dynamic} (using \code{\link{landscape}}). If a multi-patch
+#'   landscape has been defined for \code{dynamic}, but \code{population} has
+#'   only one row or is a vector, this population will be duplicated for all
+#'   patches in the landscape.
 #' @param timesteps a positive integer giving the number of time steps
 #'   (iterations) over which to simulate the model
 #' @param replicates a positive integer giving the number of independent time
@@ -59,25 +60,8 @@ simulation <- function (dynamic, population, timesteps = 1, replicates = 1, ncor
   # given a dynamic and starting population, simulate the population for some
   # timesteps, and replicate a number of times, optionally in parallel
 
-  # convert the population to a dataframe if required
-  if (!is.data.frame(population)) {
-
-    # check the population vector makes sense
-    stopifnot(is.numeric(population))
-    stopifnot(length(population) == length(dynamic$states))
-
-    # make it into a dataframe
-    names <- names(population)
-    population <- as.data.frame(as.list(population))
-    names(population) <- names
-
-  }
-
-  # if it's a one-row dataframe, replicate for the number of habitat patches
-  if (nrow(population) == 1) {
-    n_patches <- nrow(population(landscape(dynamic)))
-    population <- population[rep(1, n_patches), ]
-  }
+  # coerce the population to the correct format
+  population <- expandPopulation(population, dynamic)
 
   # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population

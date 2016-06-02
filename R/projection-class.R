@@ -6,9 +6,15 @@
 #' @description Project a population dynamic model in discrete time, recording
 #'   the number of individuals in each state at each time point.
 #' @param dynamic a population dynamic model of class \code{\link{dynamic}}
-#' @param population a named vector of positive integers, giving the number of
-#'   individuals in each state of \code{dynamic}
-#' @param timesteps a positive integer giving the number of time steps
+#' @param population a dataframe or named vector of positive integers, giving
+#'   the number of individuals in each state of \code{dynamic}. If a dataframe,
+#'   it should have only one row (as in the examples below), or as many rows as
+#'   patches in the metapopulation if a multi-patch landscape has been defined
+#'   for \code{dynamic} (using \code{\link{landscape}}). If a multi-patch
+#'   landscape has been defined for \code{dynamic}, but \code{population} has
+#'   only one row or is a vector, this population will be duplicated for all
+#'   patches in the landscape.
+##' @param timesteps a positive integer giving the number of time steps
 #'   (iterations) over which to simulate the model
 #' @return an object of class \code{pop_projection}
 #' @export
@@ -39,9 +45,8 @@ projection <- function (dynamic, population, timesteps = 1) {
   # given a dynamic and starting population, project the population for some
   # timesteps
 
-  # check the population vector makes sense
-  stopifnot(length(population) == length(dynamic$states))
-  stopifnot(sort(names(population)) == sort(dynamic$states))
+  # coerce the population to the correct format
+  population <- expandPopulation(population, dynamic)
 
   # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population
