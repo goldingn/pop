@@ -52,7 +52,7 @@ pd <- dynamic(stasis_egg,
               pupation,
               fecundity)
 
-population <- c(egg = 1200, larva = 250, adult = 50)
+population <- data.frame(egg = 1200, larva = 250, adult = 50)
 
 # simulate for 50 timesteps, 30 times
 proj <- projection(dynamic = pd,

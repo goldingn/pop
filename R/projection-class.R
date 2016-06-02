@@ -28,7 +28,7 @@
 #'               pupation,
 #'               fecundity)
 #'
-#' population <- c(egg = 1200, larva = 250, adult = 50)
+#' population <- data.frame(egg = 1200, larva = 250, adult = 50)
 #'
 #' # simulate for 50 timesteps, 30 times
 #' proj <- projection(dynamic = pd,
@@ -43,7 +43,7 @@ projection <- function (dynamic, population, timesteps = 1) {
   stopifnot(length(population) == length(dynamic$states))
   stopifnot(sort(names(population)) == sort(dynamic$states))
 
-  # update the dynamic's patch population with the requested starting population
+  # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population
 
   # set up results matrix
@@ -54,22 +54,22 @@ projection <- function (dynamic, population, timesteps = 1) {
   colnames(result) <- dynamic$states
 
   # add population to first row
-  result[1, ] <- population
+  result[1, ] <- as.numeric(population)
 
-  # loop through timesteps projecting according to the patch state
+  # loop through timesteps projecting according to the landscape state
   for(i in seq_len(timesteps)) {
 
     # get the time-dependent transition matrix
     A <- as.matrix(dynamic)
 
     # project to the next timestep
-    population <- (A %*% population)[, 1]
+    population[1, ] <- (A %*% as.numeric(population))[, 1]
 
-    # update the patch population
+    # update the landscape population
     population(landscape(dynamic)) <- population
 
     # store the result
-    result[i + 1, ] <- population
+    result[i + 1, ] <- as.numeric(population)
 
   }
 

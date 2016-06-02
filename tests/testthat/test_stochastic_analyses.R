@@ -17,9 +17,9 @@ test_that('stochastic analyses work', {
                  hatching,
                  pupation,
                  fecundity)
-  population <- c(eggs = 1000,
-                  larvae = 200,
-                  adults = 50)
+  population <- data.frame(eggs = 1000,
+                           larvae = 200,
+                           adults = 50)
 
 
   # set the RNG seed and simulate 30 times for 50 generations each
