@@ -6,9 +6,15 @@
 #' @description Project a population dynamic model in discrete time, recording
 #'   the number of individuals in each state at each time point.
 #' @param dynamic a population dynamic model of class \code{\link{dynamic}}
-#' @param population a named vector of positive integers, giving the number of
-#'   individuals in each state of \code{dynamic}
-#' @param timesteps a positive integer giving the number of time steps
+#' @param population a dataframe or named vector of positive integers, giving
+#'   the number of individuals in each state of \code{dynamic}. If a dataframe,
+#'   it should have only one row (as in the examples below), or as many rows as
+#'   patches in the metapopulation if a multi-patch landscape has been defined
+#'   for \code{dynamic} (using \code{\link{landscape}}). If a multi-patch
+#'   landscape has been defined for \code{dynamic}, but \code{population} has
+#'   only one row or is a vector, this population will be duplicated for all
+#'   patches in the landscape.
+##' @param timesteps a positive integer giving the number of time steps
 #'   (iterations) over which to simulate the model
 #' @return an object of class \code{pop_projection}
 #' @export
@@ -28,7 +34,7 @@
 #'               pupation,
 #'               fecundity)
 #'
-#' population <- c(egg = 1200, larva = 250, adult = 50)
+#' population <- data.frame(egg = 1200, larva = 250, adult = 50)
 #'
 #' # simulate for 50 timesteps, 30 times
 #' proj <- projection(dynamic = pd,
@@ -39,11 +45,10 @@ projection <- function (dynamic, population, timesteps = 1) {
   # given a dynamic and starting population, project the population for some
   # timesteps
 
-  # check the population vector makes sense
-  stopifnot(length(population) == length(dynamic$states))
-  stopifnot(sort(names(population)) == sort(dynamic$states))
+  # coerce the population to the correct format
+  population <- expandPopulation(population, dynamic)
 
-  # update the dynamic's patch population with the requested starting population
+  # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population
 
   # set up results matrix
@@ -54,22 +59,22 @@ projection <- function (dynamic, population, timesteps = 1) {
   colnames(result) <- dynamic$states
 
   # add population to first row
-  result[1, ] <- population
+  result[1, ] <- as.numeric(population)
 
-  # loop through timesteps projecting according to the patch state
+  # loop through timesteps projecting according to the landscape state
   for(i in seq_len(timesteps)) {
 
     # get the time-dependent transition matrix
     A <- as.matrix(dynamic)
 
     # project to the next timestep
-    population <- (A %*% population)[, 1]
+    population[1, ] <- (A %*% as.numeric(population))[, 1]
 
-    # update the patch population
+    # update the landscape population
     population(landscape(dynamic)) <- population
 
     # store the result
-    result[i + 1, ] <- population
+    result[i + 1, ] <- as.numeric(population)
 
   }
 

@@ -43,10 +43,10 @@ print.transfun <- function(x, ...) {
     text <- sprintf('user-specified %s transfun',
                     transfunType(x))
   } else {
-    patch <- patch(NULL)
+    landscape <- as.landscape(NULL)
     text <- sprintf('%s transfun with expectation %s\n',
                     transfunType(x),
-                    expected(x, patch))
+                    expected(x, landscape))
   }
 
   cat(text)
@@ -85,15 +85,15 @@ as.compound <- function (x) {
 }
 
 # add expectation function to grab expectations from transfuns for as.matrix
-expected <- function (transfun, patch) {
+expected <- function (transfun, landscape) {
   # get transfun type, if it's a compound, call expectation recursively
   type <- transfunType(transfun)
   if (type == 'compound') {
     # expand and get sub-expectations
     components <- transfun()
-    expect <- expected(components[[1]], patch) * expected(components[[2]], patch)
+    expect <- expected(components[[1]], landscape) * expected(components[[2]], landscape)
   } else {
-    expect <- transfun(patch)
+    expect <- transfun(landscape)
   }
   return (expect)
 }
@@ -103,29 +103,28 @@ expected <- function (transfun, patch) {
 #' @description A utility function to enable users to create bespoke transition
 #'   functions (\code{transfun} objects) for use in \code{transition}s.
 #' @param fun an R function describing the transition. This must take only one
-#'   argument: \code{patch}, and return a single numeric value, see
+#'   argument: \code{landscape}, and return a numeric vector, see
 #'   \code{details}.
 #' @param type what type of transition this function represents, a probability
 #'   or a rate
-#' @details \code{fun} must take only one argument, \code{patch}, an object of
-#'   class \code{\link{patch}}. \code{patch} objects contain three elements
-#'   which may be used in the function: \code{population}, a named numeric
-#'   vector giving the number of individuals of each stage *within the patch*;
-#'   \code{area}; a single numeric value giving the area of the patch in square
-#'   kilometres; and \code{features}, a named numeric vector containing
-#'   miscellaneous features of the habitat patch, such and measures of patch
-#'   quality or environmental variables. See examples for an illustration of how
-#'   to these objects.
+#' @details \code{fun} must take only one argument, \code{landscape}, an object
+#'   of class \code{\link{landscape}}. \code{landscape} objects contain three
+#'   elements which may be used in the function: \code{population}, a dataframe
+#'   giving the number of individuals of each stage (columns) in each patch
+#'   (rows); \code{area}; a numeric vector giving the area of each patch in
+#'   square kilometres; and \code{features}, a dataframe containing
+#'   miscellaneous features (columns) of each habitat patch (rows), such as
+#'   measures of patch quality or environmental variables. See examples for an
+#'   illustration of how to these objects.
 #' @export
 #' @examples
 #' # a very simple (and unnecessary, see ?p) transfun
-#' fun <- function(patch) 0.3
+#' fun <- function(landscape) 0.3
 #' prob0_3 <- as.transfun(fun, type = 'probability')
 #'
-#' # a density-dependent probability (population and area are passed via the
-#' # dots)
-#' dd_fun <- function (patch) {
-#'     adult_density <- patch$population['adult'] / patch$area
+#' # a density-dependent probability
+#' dd_fun <- function (landscape) {
+#'     adult_density <- population(landscape, 'adult') / area(landscape)
 #'     sqrt(1 / adult_density)
 #' }
 #' dd_prob <- as.transfun(dd_fun, type = 'probability')
@@ -141,8 +140,8 @@ as.transfun <- function (fun, type = c('probability', 'rate')) {
 
   # check dots is the only argument
   args <- names(formals(fun))
-  if (length(args) != 1 && args != 'patch') {
-    stop ("transfun objects must only take the argument 'patch'
+  if (length(args) != 1 && args != 'landscape') {
+    stop ("transfun objects must only take the argument 'landscape'
           see ?as.transfun for details and examples")
   }
 

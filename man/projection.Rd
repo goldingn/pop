@@ -15,8 +15,14 @@ is.pop_projection(x)
 \arguments{
 \item{dynamic}{a population dynamic model of class \code{\link{dynamic}}}
 
-\item{population}{a named vector of positive integers, giving the number of
-individuals in each state of \code{dynamic}}
+\item{population}{a dataframe or named vector of positive integers, giving
+the number of individuals in each state of \code{dynamic}. If a dataframe,
+it should have only one row (as in the examples below), or as many rows as
+patches in the metapopulation if a multi-patch landscape has been defined
+for \code{dynamic} (using \code{\link{landscape}}). If a multi-patch
+landscape has been defined for \code{dynamic}, but \code{population} has
+only one row or is a vector, this population will be duplicated for all
+patches in the landscape.}
 
 \item{timesteps}{a positive integer giving the number of time steps
 (iterations) over which to simulate the model}
@@ -52,7 +58,7 @@ pd <- dynamic(stasis_egg,
               pupation,
               fecundity)
 
-population <- c(egg = 1200, larva = 250, adult = 50)
+population <- data.frame(egg = 1200, larva = 250, adult = 50)
 
 # simulate for 50 timesteps, 30 times
 proj <- projection(dynamic = pd,

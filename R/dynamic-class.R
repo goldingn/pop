@@ -43,7 +43,7 @@ dynamic <- function (...) {
 
   # set class and return
   object <- as.dynamic(object)
-  landscape(object) <- patch(object)
+  landscape(object) <- as.landscape(object)
   return (object)
 }
 
@@ -112,32 +112,6 @@ plot.dynamic <- function (x, ...) {
 }
 
 # ~~~~~~~
-# access to structure attribute of dynamic
-
-#' @rdname dynamic
-#' @name landscape
-#' @param dynamic an object of class \code{dynamic}
-#' @param value an object of class \code{patch}
-#' @export
-#' @details The accessor function \code{landscape} either returns or sets the
-#'   landscape structure of the dynamic. Currently encoded as a
-#'   \code{\link{patch}} object
-landscape <- function (dynamic) {
-  stopifnot(is.dynamic(dynamic))
-  value <- attr(dynamic, 'landscape')
-  return (value)
-}
-
-#' @rdname dynamic
-#' @export
-`landscape<-` <- function (dynamic, value) {
-  stopifnot(is.dynamic(dynamic))
-  stopifnot(is.patch(value))
-  attr(dynamic, 'landscape') <- value
-  return (dynamic)
-}
-
-# ~~~~~~~
 # dynamic composition functions
 
 add.dynamic <- function (dynamic1, dynamic2) {
@@ -193,13 +167,13 @@ getA <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states))
   rownames(mat) <- colnames(mat) <- x$states
-  patch <- landscape(x)
+  landscape <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
 
     # get the expectation
-    expectation <- expected(t$transfun, patch)
+    expectation <- expected(t$transfun, landscape)
 
     # if it's a rate (or compound containing a rate)
     if (containsRate(t$transfun)) {
@@ -259,7 +233,7 @@ getF <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states)) * 0
   rownames(mat) <- colnames(mat) <- x$states
-  patch <- landscape(x)
+  landscape <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
@@ -268,7 +242,7 @@ getF <- function (x) {
     if (containsRate(t$transfun)) {
 
       # get the expectation and add it in
-      expectation <- expected(t$transfun, patch)
+      expectation <- expected(t$transfun, landscape)
       mat[t$to, t$from] <-  expectation
 
     }
@@ -284,7 +258,7 @@ getP <- function (x) {
   # set up empty matrix
   mat <- diag(length(x$states))
   rownames(mat) <- colnames(mat) <- x$states
-  patch <- landscape(x)
+  landscape <- landscape(x)
 
   # apply the transitions
   for (t in x$transitions) {
@@ -293,7 +267,7 @@ getP <- function (x) {
     if (!containsRate(t$transfun)) {
 
       # get the expectation
-      expectation <- expected(t$transfun, patch)
+      expectation <- expected(t$transfun, landscape)
 
       if (t$to == t$from) {
         # if it's the diagonal, multiply by the expectation

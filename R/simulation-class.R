@@ -6,8 +6,14 @@
 #' @description Simulate a population dynamic model in discrete time, recording
 #'   the number of individuals in each state at each time point.
 #' @param dynamic a population dynamic model of class \code{\link{dynamic}}
-#' @param population a named vector of positive integers, giving the number of
-#'   individuals in each state of \code{dynamic}
+#' @param population a dataframe or named vector of positive integers, giving
+#'   the number of individuals in each state of \code{dynamic}. If a dataframe,
+#'   it should have only one row (as in the examples below), or as many rows as
+#'   patches in the metapopulation if a multi-patch landscape has been defined
+#'   for \code{dynamic} (using \code{\link{landscape}}). If a multi-patch
+#'   landscape has been defined for \code{dynamic}, but \code{population} has
+#'   only one row or is a vector, this population will be duplicated for all
+#'   patches in the landscape.
 #' @param timesteps a positive integer giving the number of time steps
 #'   (iterations) over which to simulate the model
 #' @param replicates a positive integer giving the number of independent time
@@ -41,7 +47,7 @@
 #'               pupation,
 #'               fecundity)
 #'
-#' population <- c(egg = 1200, larva = 250, adult = 50)
+#' population <- data.frame(egg = 1200, larva = 250, adult = 50)
 #'
 #' # simulate for 50 timesteps, 30 times
 #' sim <- simulation(dynamic = pd,
@@ -54,11 +60,10 @@ simulation <- function (dynamic, population, timesteps = 1, replicates = 1, ncor
   # given a dynamic and starting population, simulate the population for some
   # timesteps, and replicate a number of times, optionally in parallel
 
-  # check the population vector makes sense
-  stopifnot(length(population) == length(dynamic$states))
-  stopifnot(sort(names(population)) == sort(dynamic$states))
+  # coerce the population to the correct format
+  population <- expandPopulation(population, dynamic)
 
-  # update the dynamic's patch population with the requested starting population
+  # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population
 
   # if the number of cores is not defined, assume they want all of them
@@ -200,15 +205,15 @@ update <- function (population, dynamic) {
   # get new population object to fill
   new_population <- population * 0
 
-  # get patch object
-  patch <- landscape(dynamic)
+  # get landscape object
+  landscape <- landscape(dynamic)
 
   # loop through transitions
   for (trans in dynamic$transitions) {
 
     # get the old and new N
-    N <- population[trans$from]
-    N_new <- stoch(trans$transfun, N = N, patch = patch)
+    N <- population[, trans$from]
+    N_new <- stoch(trans$transfun, N = N, landscape = landscape)
 
     if (trans$to == trans$from) {
       # if it's to the same state...
@@ -216,13 +221,13 @@ update <- function (population, dynamic) {
       if (containsRate(trans$transfun)) {
 
         # if it's a rate (recruitment) add to new population
-        new_population[trans$to] <- new_population[trans$to] + N_new
+        new_population[, trans$to] <- new_population[, trans$to] + N_new
 
       } else {
 
         # if it's a (survival) probability (not recruitment), replace *old*
         # population with the new one
-        population[trans$to] <- N_new
+        population[, trans$to] <- N_new
 
       }
 
@@ -232,15 +237,15 @@ update <- function (population, dynamic) {
       if (containsRate(trans$transfun)) {
 
         # if it was a recruitment event add to the state in the new population
-        new_population[trans$to] <- new_population[trans$to] + N_new
+        new_population[, trans$to] <- new_population[, trans$to] + N_new
 
       } else {
 
         # if it *wasn't* a recruitment event, update in the new population
-        new_population[trans$to] <- new_population[trans$to] + N_new
+        new_population[, trans$to] <- new_population[, trans$to] + N_new
 
         # and remove the same number from the old population
-        population[trans$from] <- population[trans$from] - N_new
+        population[, trans$from] <- population[, trans$from] - N_new
 
       }
 
@@ -255,14 +260,14 @@ update <- function (population, dynamic) {
 }
 
 # stochastic updates for probabilities and rates
-stoch_prob <- function (parameters, N) {
-  rbinom(n = 1, size = N, prob = parameters[1])
+stoch_prob <- function (expectation, N) {
+  rbinom(n = length(N), size = N, prob = expectation)
 }
-stoch_rate <- function (parameters, N) {
-  rpois(n = 1, lambda = N * parameters[1])
+stoch_rate <- function (expectation, N) {
+  rpois(n = length(N), lambda = N * expectation)
 }
 
-stoch <- function (transfun, N, patch) {
+stoch <- function (transfun, N, landscape) {
   # given a parameter value, a number of individuals in the *from* state,
   # stochastically generate the number of individuals in the *to* state
 
@@ -273,15 +278,15 @@ stoch <- function (transfun, N, patch) {
 
     # if it's a compound transfun, call stoch recursively on each component
     components <- transfun()
-    N <- stoch(components[[1]], N, patch)
-    N <- stoch(components[[2]], N, patch)
+    N <- stoch(components[[1]], N, landscape)
+    N <- stoch(components[[2]], N, landscape)
 
   } else {
 
     # otherwise execute the transition
     N <- switch(type,
-                probability = stoch_prob(expected(transfun, patch), N),
-                rate = stoch_rate(expected(transfun, patch), N))
+                probability = stoch_prob(expected(transfun, landscape), N),
+                rate = stoch_rate(expected(transfun, landscape), N))
 
   }
 
@@ -296,8 +301,8 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
   # set up matrix to store results
   res <- matrix(0,
                 nrow = timesteps + 1,
-                ncol = length(population))
-  res[1, ] <- population
+                ncol = ncol(population))
+  res[1, ] <- as.numeric(population)
   rownames(res) <- 0:timesteps
   colnames(res) <- names(population)
 
@@ -306,11 +311,11 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
     # sample the population
     population <- update(population, dynamic)
 
-    # update it in the patch information
+    # update it in the landscape information
     population(landscape(dynamic)) <- population
 
     # store the result & call it quits if they're all gone
-    res[time + 1, ] <- population
+    res[time + 1, ] <- as.numeric(population)
     if (all(population == 0)) break()
 
   }
