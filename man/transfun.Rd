@@ -25,7 +25,7 @@ parameters(x) <- value
 \item{y}{a transfun object to be multiplied with another with the same
 pathway}
 
-\item{value}{a named list of parameters matching those set for \code{x}}
+\item{value}{a named list of parameters matching those currently defined for \code{x}}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -57,5 +57,8 @@ param_prob$p <- 0.6
 parameters(prob) <- param_prob
 parameters(prob)
 
+param_compound$r <- 15
+parameters(compound) <- param_compound
+parameters(compound)
 }
 

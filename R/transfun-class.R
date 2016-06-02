@@ -210,23 +210,63 @@ parameters <- function (x) {
 
 #' @rdname transfun
 #' @export
-#' @param value a named list of parameters matching those set for \code{x}
+#' @param value a named list of parameters matching those currently defined for \code{x}
 #' @examples
 #' # update the parameters of these transfuns
 #' param_prob$p <- 0.6
 #' parameters(prob) <- param_prob
 #' parameters(prob)
 #'
+#' param_compound$r <- 15
+#' parameters(compound) <- param_compound
+#' parameters(compound)
 `parameters<-` <- function (x, value) {
 
-  # check new parameters
-  parametersCheck(value, x)
+  if (is.compound(x)) {
 
-  # if that worked, define param and fun here
-  param <- value
-  environment(x) <- environment()
+    # get components
+    components <- x()
+
+    # do components in turn
+    for (i in 1:2) {
+      new_param <- old_param <- parameters(components[[i]])
+
+      # loop through parameters in this component
+      for (j in 1:length(new_param)) {
+
+        # get first match
+        which_value <- which(names(value) == names(old_param)[j])[1]
+
+        # update in new_param
+        new_param[j] <- value[which_value]
+
+        # remove from value
+        value <- value[-which_value]
+
+      }
+
+      # update transfun
+      parameters(components[[i]]) <- new_param
+
+    }
+
+    # recombine the components
+    x <- components[[1]] * components[[2]]
+
+  } else {
+    # otherwise update basis transfun
+
+    # check new parameters
+    parametersCheck(value, x)
+
+    # if that worked, define param and fun here
+    param <- value
+    environment(x) <- environment()
+
+  }
 
   return (x)
+
 }
 
 
