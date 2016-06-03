@@ -7,19 +7,23 @@ test_that('dynamic classes work', {
   stasis_larva <- tr(larva ~ larva, p(0.3))
   stasis_adult <- tr(adult ~ adult, p(0.8))
   hatching <- tr(larva ~ egg, p(0.5))
-  fecundity <- tr(egg ~ adult, r(3))
+  fecundity <- tr(egg ~ adult, p(0.2) * r(3))
   pupation <- tr(adult ~ larva, p(0.2))
+  clonal <- tr(larva ~ larva, r(1.4))
+
   stasis <- dynamic(stasis_egg,
                     stasis_larva,
                     stasis_adult)
   growth <- dynamic(hatching,
-                    pupation)
+                    pupation,
+                    clonal)
   reproduction <- dynamic(fecundity)
   all1 <- dynamic(stasis_egg,
                   stasis_larva,
                   stasis_adult,
                   hatching,
                   pupation,
+                  clonal,
                   fecundity)
 
   # make sure adding two dyanmics is the same as compiling their transitions in
@@ -104,6 +108,31 @@ test_that('dynamic classes work', {
   # check all1 and all2 are still the same even as matrices
   expect_equal(mat_all1, mat_all2)
 
+  # compute F, P and R matrics and make sure they return something sensible
+  mat_all1_F <- as.matrix(all1, which = 'F')
+  mat_all2_F <- as.matrix(all2, which = 'F')
+  mat_all1_P <- as.matrix(all1, which = 'P')
+  mat_all2_P <- as.matrix(all2, which = 'P')
+  mat_all1_R <- as.matrix(all1, which = 'R')
+  mat_all2_R <- as.matrix(all2, which = 'R')
+
+  # check classes
+  expect_s3_class(mat_all1_F, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all2_F, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all1_P, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all2_P, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all1_R, c('matrix', 'transition_matrix'))
+  expect_s3_class(mat_all2_R, c('matrix', 'transition_matrix'))
+
+  # check dimensions are correct
+  expect_equal(dim(mat_all1_F), c(3, 3))
+  expect_equal(dim(mat_all2_F), c(3, 3))
+  expect_equal(dim(mat_all1_P), c(3, 3))
+  expect_equal(dim(mat_all2_P), c(3, 3))
+  expect_equal(dim(mat_all1_R), c(3, 3))
+  expect_equal(dim(mat_all2_R), c(3, 3))
+
+
   # check that plot returns an igraph object
   plot_stasis <- plot(stasis)
   plot_growth <- plot(growth)
@@ -115,5 +144,24 @@ test_that('dynamic classes work', {
   expect_s3_class(plot_reproduction, 'igraph')
   expect_s3_class(plot_all1, 'igraph')
   expect_s3_class(plot_all2, 'igraph')
+
+  # get parameters of a dynamic
+  expected_param_all <- list(stasis_egg = list(p = 0.4),
+                             stasis_larva = list(p = 0.3),
+                             stasis_adult = list(p = 0.8),
+                             hatching = list(p = 0.5),
+                             pupation = list(p = 0.2),
+                             clonal = list(r = 1.4),
+                             fecundity = list(p = 0.2, r = 3))
+
+  # check they're as expected in both dynamic creation methods
+  expect_equal(parameters(all1), expected_param_all)
+  expect_equal(parameters(all2), expected_param_all)
+
+  # update them & check it comes through
+  expected_param_all_updated <- expected_param_all
+  expected_param_all_updated$fecundity$p <- 0.5
+  parameters(all1) <- expected_param_all_updated
+  expect_equal(parameters(all1), expected_param_all_updated)
 
 })
