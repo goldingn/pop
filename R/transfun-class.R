@@ -198,7 +198,7 @@ containsUserTransfun <- function (transfun) {
 #' (param_prob <- parameters(prob))
 #' (param_compound <- parameters(compound))
 #'
-parameters <- function (x) {
+parameters.transfun <- function (x) {
   if (is.compound(x)) {
     components <- x()
     param <- c(parameters(components[[1]]), parameters(components[[2]]))
@@ -220,7 +220,7 @@ parameters <- function (x) {
 #' param_compound$r <- 15
 #' parameters(compound) <- param_compound
 #' parameters(compound)
-`parameters<-` <- function (x, value) {
+`parameters<-.transfun` <- function (x, value) {
 
   if (is.compound(x)) {
 

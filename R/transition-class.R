@@ -100,3 +100,16 @@ print.transition <- function (x, ...) {
   return (x)
 }
 
+# #' @rdname transition
+# #' @name parameters
+# #' @export
+# #' @examples
+# #' # extract the transfun parameters
+# #' (param_prob <- parameters(fecundity))
+# #' (param_compound <- parameters(compound))
+# #'
+# parameters <- function (x) {
+#   stopifnot
+# }
+
+# overload the parameters function to act on transfuns, transition and dynamics

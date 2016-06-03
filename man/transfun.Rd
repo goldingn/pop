@@ -4,7 +4,8 @@
 \alias{*.transfun}
 \alias{is.transfun}
 \alias{parameters}
-\alias{parameters<-}
+\alias{parameters.transfun}
+\alias{parameters<-.transfun}
 \alias{print.transfun}
 \alias{transfun}
 \title{transfun objects}
@@ -15,9 +16,9 @@ is.transfun(x)
 
 \method{*}{transfun}(x, y)
 
-parameters(x)
+\method{parameters}{transfun}(x)
 
-parameters(x) <- value
+\method{parameters}{transfun}(x) <- value
 }
 \arguments{
 \item{x}{a transfun object to print or an object to test as a transfun object}
