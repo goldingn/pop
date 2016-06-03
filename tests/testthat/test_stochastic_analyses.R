@@ -17,6 +17,7 @@ test_that('stochastic analyses work', {
                  hatching,
                  pupation,
                  fecundity)
+
   population <- data.frame(eggs = 1000,
                            larvae = 200,
                            adults = 50)
@@ -28,6 +29,13 @@ test_that('stochastic analyses work', {
   # run with 1 core
   sim <- simulation(dynamic = all,
                     population = population,
+                    timesteps = 50,
+                    replicates = 30,
+                    ncores = 1)
+
+  # check you can also do this with a vector
+  sim <- simulation(dynamic = all,
+                    population = unlist(population),
                     timesteps = 50,
                     replicates = 30,
                     ncores = 1)

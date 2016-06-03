@@ -29,6 +29,11 @@ test_that('deterministic analyses work', {
                      population = population,
                      timesteps = 100)
 
+  # check you can also do this with a vector
+  proj <- projection(dynamic = all,
+                     population = unlist(population),
+                     timesteps = 100)
+
   # check it has the right class and structure
   expect_s3_class(proj, 'pop_projection')
   expect_s3_class(proj$dynamic, 'dynamic')
