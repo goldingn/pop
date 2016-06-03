@@ -3,9 +3,9 @@
 #' @title dynamic objects
 #' @name dynamic
 #' @rdname dynamic
-#' @param \dots one or more transition objects making up the dynamic (for the
-#'   \code{dynamic} function) or additional arguments (for \code{plot} and
-#'   \code{print})
+#' @param \dots for \code{dynamic()}: one or more \code{transition} (or other
+#'   \code{dynamic}) objects making up the dynamic. For \code{plot()} and
+#'   \code{print()}: further arguments passed to or from other methods
 #' @description creates a \code{dynamic} object, comprising multiple
 #'   \code{transition} objects to define a dynamical system. \code{dynamic}
 #'   objects are the core of \code{pop}, since they can be created and updated
@@ -38,6 +38,9 @@ dynamic <- function (...) {
 
   # capture objects
   object <- captureDots(...)
+
+  # unpack any dynamics into their component transitions, keeping names etc
+  object <- unpackDynamics(object)
 
   # check they're transitions
   stopifnot(all(sapply(object, is.transition)))
@@ -391,3 +394,36 @@ parameters.dynamic <- function (x) {
   return (x)
 }
 
+unpackDynamics <- function (object) {
+  # given a named list of (hopefully) transition and dynamic objects, expand out
+  # all the component transitions of the dynamics, in order, into a named list
+  # of dynamics
+
+  # look for dynamics
+  dynamics <- sapply(object, is.dynamic)
+
+  if (any(dynamics) & !all(dynamics)) {
+
+    # grab the first one
+    elem <- which(dynamics)[1]
+
+    if (elem == 1) {
+      # if it's the first element (can't be only element)
+      object <- c(object[[elem]], object[-elem])
+    } else if (elem == length(object)) {
+      # if it's the last element (can't be only element)
+      object <- c(object[-elem], object[[elem]])
+    } else {
+      # it must be in the middle
+      object <- c(object[1:(elem - 1)], object[[elem]], object[(elem + 1):length(object)])
+    }
+
+    # one down, now recursively look for more
+    object <- unpackDynamics(object)
+
+  }
+
+  # return
+  return (object)
+
+}

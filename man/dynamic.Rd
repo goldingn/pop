@@ -44,9 +44,9 @@ fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
 \item{value}{a nested named list of parameters within each transition
 matching those currently defined for \code{x}}
 
-\item{\dots}{one or more transition objects making up the dynamic (for the
-\code{dynamic} function) or additional arguments (for \code{plot} and
-\code{print})}
+\item{\dots}{for \code{dynamic()}: one or more \code{transition} (or other
+\code{dynamic}) objects making up the dynamic. For \code{plot()} and
+\code{print()}: further arguments passed to or from other methods}
 }
 \description{
 creates a \code{dynamic} object, comprising multiple
