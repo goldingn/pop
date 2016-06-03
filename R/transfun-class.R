@@ -191,7 +191,6 @@ containsUserTransfun <- function (transfun) {
 }
 
 #' @rdname transfun
-#' @name parameters
 #' @export
 #' @examples
 #' # extract the transfun parameters

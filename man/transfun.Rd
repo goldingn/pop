@@ -3,7 +3,6 @@
 \name{transfun}
 \alias{*.transfun}
 \alias{is.transfun}
-\alias{parameters}
 \alias{parameters.transfun}
 \alias{parameters<-.transfun}
 \alias{print.transfun}
