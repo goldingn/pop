@@ -2,8 +2,6 @@ context('determininstic-analysis')
 
 test_that('deterministic analyses work', {
 
-  skip_on_cran()
-
   # set up a simple model and initial population
   # generate four types of dynamic
   stasis_egg <- tr(eggs ~ eggs, p(0.4))
