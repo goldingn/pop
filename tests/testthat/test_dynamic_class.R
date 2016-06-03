@@ -24,13 +24,26 @@ test_that('dynamic classes work', {
 
   # make sure adding two dyanmics is the same as compiling their transitions in
   # one go
-  all2 <- stasis + growth + reproduction
+  all2 <- dynamic(stasis, growth, reproduction)
   expect_equal(all2, all1)
 
-  # throw an error if the user tries to add a transition to a dynamic
-  # expect_error(all1 + fecundity)
+  # check 3 trs, then two dynamics
+  all3 <- dynamic(stasis_egg,
+                  stasis_larva,
+                  stasis_adult,
+                  growth,
+                  reproduction)
+  expect_equal(all3, all1)
 
-    # check they have the right class
+  # check dynamic sandwich
+  all4 <- dynamic(stasis_egg,
+                  stasis_larva,
+                  stasis_adult,
+                  growth,
+                  fecundity)
+  expect_equal(all4, all1)
+
+  # check they have the right class
   expect_s3_class(stasis, 'dynamic')
   expect_s3_class(growth, 'dynamic')
   expect_s3_class(reproduction, 'dynamic')

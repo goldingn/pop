@@ -24,13 +24,17 @@
 #' fecundity <- tr(egg ~ adult, r(3))
 #' pupation <- tr(adult ~ larva, p(0.2))
 #'
-#' #combine these into separate,component dynamics
+#' # combine these into separate dynamics
 #' stasis <- dynamic(stasis_egg,
 #'                   stasis_larva,
 #'                   stasis_adult)
 #' growth <- dynamic(hatching,
 #'                   pupation)
 #' reproduction <- dynamic(fecundity)
+#'
+#' # combine these into one dynamic (the same as listing all the transitions
+#' # separately)
+#' all <- dynamic(stasis, growth, reproduction)
 #'
 dynamic <- function (...) {
   # given a bunch of transition functions, build an object representing a
@@ -50,15 +54,6 @@ dynamic <- function (...) {
   landscape(object) <- as.landscape(object)
   return (object)
 }
-
-#' @rdname dynamic
-#' @export
-#' @param y a dynamic object to be added to another
-#' @examples
-#' # combine these into one dynamic
-#' all <- stasis + growth + reproduction
-#'
-`+.dynamic` <- function (x, y) add.dynamic(x, y)
 
 #' @rdname dynamic
 #' @export
@@ -397,12 +392,18 @@ parameters.dynamic <- function (x) {
 unpackDynamics <- function (object) {
   # given a named list of (hopefully) transition and dynamic objects, expand out
   # all the component transitions of the dynamics, in order, into a named list
-  # of dynamics
+  # of dynamics. This is harder than it should be, but is the tidiest way I
+  # found to keep the transition names without prepending the dynamic name to it
 
   # look for dynamics
   dynamics <- sapply(object, is.dynamic)
 
-  if (any(dynamics) & !all(dynamics)) {
+  # if it's just one dynamic, return it as is
+  if (length(dynamics) == 1 && dynamics) {
+
+    object <- x
+
+  } else if (any(dynamics)) {
 
     # grab the first one
     elem <- which(dynamics)[1]
