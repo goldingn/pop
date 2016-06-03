@@ -121,16 +121,6 @@ states <- function (x) {
   getStates(x)
 }
 
-# ~~~~~~~
-# dynamic composition functions
-
-add.dynamic <- function (dynamic1, dynamic2) {
-  dynamic <- c(dynamic1, dynamic2)
-  dynamic <- as.dynamic(dynamic)
-  landscape(dynamic) <- as.landscape(dynamic)
-  return (dynamic)
-}
-
 #' @rdname dynamic
 #' @export
 #' @examples
