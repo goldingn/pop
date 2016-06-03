@@ -209,7 +209,7 @@ update <- function (population, dynamic) {
   landscape <- landscape(dynamic)
 
   # loop through transitions
-  for (trans in dynamic$transitions) {
+  for (trans in dynamic) {
 
     # get the old and new N
     N <- population[, trans$from]

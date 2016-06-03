@@ -3,6 +3,8 @@
 \name{transition}
 \alias{*.transition}
 \alias{is.transition}
+\alias{parameters.transition}
+\alias{parameters<-.transition}
 \alias{print.transition}
 \alias{tr}
 \alias{transition}
@@ -17,6 +19,10 @@ is.transition(x)
 \method{print}{transition}(x, ...)
 
 \method{*}{transition}(x, y)
+
+\method{parameters}{transition}(x)
+
+\method{parameters}{transition}(x) <- value
 }
 \arguments{
 \item{formula}{a two-sided formula identifying the states between which the
@@ -28,6 +34,8 @@ transition occurs}
 
 \item{y}{a transition object to be multiplied with another with the same
 pathway}
+
+\item{value}{a named list of parameters matching those currently defined for \code{x}}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -46,7 +54,7 @@ multiplication of transition objects with the same pathway results
 }
 \examples{
 # 50/50 chance of a larva emerging from an egg
-hatching <- tr(lava ~ egg, p(0.5))
+hatching <- tr(larva ~ egg, p(0.5))
 
 # three eggs laid per adult per time step
 fecundity <- tr(egg ~ adult, r(3))
@@ -61,5 +69,17 @@ print(pupa)
 prob_laying <- tr(egg ~ adult, p(0.6))
 (recruitment <- prob_laying * fecundity)
 
+# extract the transfun parameters
+(param_pupa <- parameters(pupa))
+(param_recruitment <- parameters(recruitment))
+
+# update the parameters of these transfuns
+param_pupa$p <- 0.6
+parameters(pupa) <- param_pupa
+parameters(pupa)
+
+param_recruitment$r <- 15
+parameters(recruitment) <- param_recruitment
+parameters(recruitment)
 }
 

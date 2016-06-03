@@ -360,3 +360,34 @@ transfun2text <- function (transfun) {
   return (text)
 }
 
+#' @rdname dynamic
+#' @export
+#' @examples
+#' # extract the parameters
+#' (param_stasis <- parameters(stasis))
+#' (param_all <- parameters(all))
+#'
+parameters.dynamic <- function (x) {
+  lapply(x, parameters)
+}
+
+#' @rdname dynamic
+#' @export
+#' @param value a nested named list of parameters within each transition
+#'   matching those currently defined for \code{x}
+#' @examples
+#' # update the parameters of these transfuns
+#' param_stasis$stasis_egg$p <- 0.6
+#' parameters(stasis) <- param_stasis
+#' parameters(stasis)
+#'
+#' param_all$fecundity$r <- 15
+#' parameters(all) <- param_all
+#' parameters(all)
+`parameters<-.dynamic` <- function (x, value) {
+  for (i in 1:length(x)) {
+    parameters(x[[i]]) <- value[[i]]
+  }
+  return (x)
+}
+

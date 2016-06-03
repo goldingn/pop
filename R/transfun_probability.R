@@ -18,7 +18,8 @@ probability <- function (value) {
   # label a value as a probability
   stopifnot(is.numeric(value))
   stopifnot(value > 0 & value < 1)
-  f <- function (landscape) value
+  param = list(p = value)
+  f <- function (landscape) param$p
   f <- as.probability(f)
   return (f)
 }

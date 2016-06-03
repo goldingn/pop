@@ -20,7 +20,8 @@ rate <- function (value) {
   stopifnot(is.numeric(value))
   stopifnot(value > 0)
   stopifnot(is.finite(value))
-  f <- function (landscape) value
+  param = list(r = value)
+  f <- function (landscape) param$r
   f <- as.rate(f)
   return (f)
 }

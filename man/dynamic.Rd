@@ -5,6 +5,8 @@
 \alias{as.matrix.dynamic}
 \alias{dynamic}
 \alias{is.dynamic}
+\alias{parameters.dynamic}
+\alias{parameters<-.dynamic}
 \alias{plot.dynamic}
 \alias{print.dynamic}
 \alias{states}
@@ -23,6 +25,10 @@ states(x)
 \method{print}{dynamic}(x, ...)
 
 \method{as.matrix}{dynamic}(x, which = c("A", "P", "F", "R"), ...)
+
+\method{parameters}{dynamic}(x)
+
+\method{parameters}{dynamic}(x) <- value
 }
 \arguments{
 \item{x}{a dynamic object to print, plot, convert to a transition matrix, or
@@ -34,6 +40,9 @@ an object to test as a dynamic object (for \code{is.dynamic}),}
 matrix (\code{'A'}), the probabilistic progression matrix (\code{'P'}), the
 fecundity matrix (\code{'F'}) or the intrinsic reproduction matrix
 (\code{'R'})}
+
+\item{value}{a nested named list of parameters within each transition
+matching those currently defined for \code{x}}
 
 \item{\dots}{one or more transition objects making up the dynamic (for the
 \code{dynamic} function) or additional arguments (for \code{plot} and
@@ -82,5 +91,17 @@ print(all)
 
 # convert to a transition matrix
 as.matrix(all)
+# extract the parameters
+(param_stasis <- parameters(stasis))
+(param_all <- parameters(all))
+
+# update the parameters of these transfuns
+param_stasis$stasis_egg$p <- 0.6
+parameters(stasis) <- param_stasis
+parameters(stasis)
+
+param_all$fecundity$r <- 15
+parameters(all) <- param_all
+parameters(all)
 }
 

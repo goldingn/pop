@@ -11,7 +11,7 @@
 #' @export
 #' @examples
 #' # 50/50 chance of a larva emerging from an egg
-#' hatching <- tr(lava ~ egg, p(0.5))
+#' hatching <- tr(larva ~ egg, p(0.5))
 #'
 #' # three eggs laid per adult per time step
 #' fecundity <- tr(egg ~ adult, r(3))
@@ -100,3 +100,30 @@ print.transition <- function (x, ...) {
   return (x)
 }
 
+#' @rdname transition
+#' @export
+#' @examples
+#' # extract the transfun parameters
+#' (param_pupa <- parameters(pupa))
+#' (param_recruitment <- parameters(recruitment))
+#'
+parameters.transition <- function (x) {
+  parameters(x$transfun)
+}
+
+#' @rdname transition
+#' @export
+#' @param value a named list of parameters matching those currently defined for \code{x}
+#' @examples
+#' # update the parameters of these transfuns
+#' param_pupa$p <- 0.6
+#' parameters(pupa) <- param_pupa
+#' parameters(pupa)
+#'
+#' param_recruitment$r <- 15
+#' parameters(recruitment) <- param_recruitment
+#' parameters(recruitment)
+`parameters<-.transition` <- function (x, value) {
+  parameters(x$transfun) <- value
+  return (x)
+}
