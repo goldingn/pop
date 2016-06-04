@@ -16,10 +16,17 @@ test_that('transfun classes work', {
                                  area = 1000),
                     type = 'probability')
 
+  # check as.transfun won't handle a silly function
+  expect_error(as.transfun(function() x,
+                           param = list(p = 0.5)))
+  expect_error(as.transfun(function(x) x,
+                           param = list(p = 0.5)))
+  expect_error(as.transfun(function(x, y) x,
+                           param = list(p = 0.5)))
+
   # compound transfuns
   compound <- prob * rate
   compound_user <- prob * dd
-
 
   # check they have the right class
   expect_s3_class(prob, 'transfun')
