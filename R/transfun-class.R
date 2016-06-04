@@ -149,7 +149,7 @@ as.transfun <- function (fun, param, type = c('probability', 'rate')) {
 
   # check landscape is the only argument
   args <- names(formals(fun))
-  if (length(args) != 1 && args != 'landscape') {
+  if (length(args) != 1 || args != 'landscape') {
     stop ("transfun objects must only take the argument 'landscape'
           see ?as.transfun for details and examples")
   }
