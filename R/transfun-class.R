@@ -46,7 +46,7 @@ print.transfun <- function(x, ...) {
     landscape <- as.landscape(NULL)
     text <- sprintf('%s transfun with expectation %s\n',
                     transfunType(x),
-                    expected(x, landscape))
+                    x(landscape))
   }
 
   cat(text)
@@ -79,23 +79,9 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function (...) list(x, y)
+  z <- function (landscape) x(landscape) * y(landscape)
   z <- as.compound(z)
   return (z)
-}
-
-# add expectation function to grab expectations from transfuns for as.matrix
-expected <- function (transfun, landscape) {
-  # get transfun type, if it's a compound, call expectation recursively
-  type <- transfunType(transfun)
-  if (type == 'compound') {
-    # expand and get sub-expectations
-    components <- transfun()
-    expect <- expected(components[[1]], landscape) * expected(components[[2]], landscape)
-  } else {
-    expect <- transfun(landscape)
-  }
-  return (expect)
 }
 
 #' @title create a transition function
@@ -176,8 +162,10 @@ containsUserTransfun <- function (transfun) {
 
   if (type == 'compound') {
     # expand and test components
-    components <- transfun()
-    ans <- containsUserTransfun(components[[1]]) | containsUserTransfun(components[[2]])
+    tf_x <- environment(transfun)$x
+    tf_y <- environment(transfun)$y
+    ans <- containsUserTransfun(tf_x) |
+      containsUserTransfun(tf_y)
   } else {
     # otherwise test this
     ans <- attr(transfun, 'user-defined')
@@ -199,8 +187,9 @@ containsUserTransfun <- function (transfun) {
 #'
 parameters.transfun <- function (x) {
   if (is.compound(x)) {
-    components <- x()
-    param <- c(parameters(components[[1]]), parameters(components[[2]]))
+    tf_x <- environment(x)$x
+    tf_y <- environment(x)$y
+    param <- c(parameters(tf_x), parameters(tf_y))
   } else {
     param <- environment(x)$param
   }
@@ -224,7 +213,7 @@ parameters.transfun <- function (x) {
   if (is.compound(x)) {
 
     # get components
-    components <- x()
+    components <- list(environment(x)$x, environment(x)$y)
 
     # do components in turn
     for (i in 1:2) {

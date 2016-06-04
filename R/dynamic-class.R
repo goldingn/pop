@@ -175,7 +175,7 @@ getA <- function (x) {
   for (t in x) {
 
     # get the expectation
-    expectation <- expected(t$transfun, landscape)
+    expectation <- t$transfun(landscape)
 
     # if it's a rate (or compound containing a rate)
     if (containsRate(t$transfun)) {
@@ -244,7 +244,7 @@ getF <- function (x) {
     if (containsRate(t$transfun)) {
 
       # get the expectation and add it in
-      expectation <- expected(t$transfun, landscape)
+      expectation <- t$transfun(landscape)
       mat[t$to, t$from] <-  expectation
 
     }
@@ -269,7 +269,7 @@ getP <- function (x) {
     if (!containsRate(t$transfun)) {
 
       # get the expectation
-      expectation <- expected(t$transfun, landscape)
+      expectation <- t$transfun(landscape)
 
       if (t$to == t$from) {
         # if it's the diagonal, multiply by the expectation
@@ -299,8 +299,9 @@ containsRate <- function (transfun) {
   type <- transfunType(transfun)
   if (type == 'compound') {
     # if it's a compound, call recursively to look for any
-    components <- transfun()
-    ans <- containsRate(components[[1]]) | containsRate(components[[2]])
+    tf_x <- environment(transfun)$x
+    tf_y <- environment(transfun)$y
+    ans <- containsRate(tf_x) | containsRate(tf_y)
   } else if (type == 'rate') {
     ans <- TRUE
   } else {
@@ -324,10 +325,11 @@ transfun2text <- function (transfun) {
   # create a short text representation of a transfun, for use in plotting
   type <- transfunType(transfun)
   if (type == 'compound') {
-    components <- transfun()
-    text <- paste0(transfun2text(components[[1]]),
+    tf_x <- environment(transfun)$x
+    tf_y <- environment(transfun)$y
+    text <- paste0(transfun2text(tf_x),
                    ' * ',
-                   transfun2text(components[[2]]))
+                   transfun2text(tf_y))
   } else {
 
     # make a nice simple text representation
@@ -336,9 +338,10 @@ transfun2text <- function (transfun) {
                      rate = 'r')
 
     # don't try to find the expectation if it's user-defined
+    landscape <- as.landscape(NULL)
     expect <- ifelse(containsUserTransfun(transfun),
                      '?',
-                     round(expected(transfun), 2))
+                     round(transfun(landscape), 2))
 
     text <- sprintf('%s(%s)',
                     prefix,
