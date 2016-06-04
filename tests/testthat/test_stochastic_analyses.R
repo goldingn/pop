@@ -29,15 +29,15 @@ test_that('stochastic analyses work', {
   # run with 1 core
   sim <- simulation(dynamic = all,
                     population = population,
-                    timesteps = 50,
-                    replicates = 30,
+                    timesteps = 10,
+                    replicates = 3,
                     ncores = 1)
 
   # check you can also do this with a vector
   sim <- simulation(dynamic = all,
                     population = unlist(population),
-                    timesteps = 50,
-                    replicates = 30,
+                    timesteps = 10,
+                    replicates = 3,
                     ncores = 1)
 
   # check it has the right class and structure
@@ -45,10 +45,10 @@ test_that('stochastic analyses work', {
   expect_s3_class(sim$dynamic, 'dynamic')
   expect_true(is.list(sim$simulations))
 
-  # 30 replicates of 51 snapshots
-  expect_equal(length(sim$simulations), 30)
+  # 3 replicates of 11 snapshots
+  expect_equal(length(sim$simulations), 3)
   maxt <- sapply(sim$simulations, nrow)
-  expect_true(all(maxt == 51))
+  expect_true(all(maxt == 11))
 
   # check there are no NAs in there
   NAs <- sapply(sim$simulations, anyNA)
@@ -63,51 +63,51 @@ test_that('stochastic analyses work', {
   # for a transition instead of a dynamic
   expect_error(simulation(dynamic = all[[1]],
                           population = population,
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # for the wrong size of population
   expect_error(simulation(dynamic = all,
                           population = population[1:2],
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # for the wrong population names
   population2 <- population
   names(population2) <- paste0(names(population2), '_blaaaargh')
   expect_error(simulation(dynamic = all,
                           population = population2,
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # nagative populations
   expect_error(simulation(dynamic = all,
                           population = population * -1,
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # non-finite populations
   expect_error(simulation(dynamic = all,
                           population = population * Inf,
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # non-finite populations
   expect_error(simulation(dynamic = all,
                           population = population * NA,
-                          timesteps = 50,
-                          replicates = 30))
+                          timesteps = 10,
+                          replicates = 3))
 
   # negative timesteps
   expect_error(simulation(dynamic = all,
                           population = population,
                           timesteps = -1,
-                          replicates = 30))
+                          replicates = 3))
 
   # negative replicates
   expect_error(simulation(dynamic = all,
                           population = population,
-                          timesteps = 50,
+                          timesteps = 10,
                           replicates = -1))
 
   # check is.simulation
@@ -125,7 +125,7 @@ test_that('stochastic analyses work', {
   # list
   expect_true(is.list(plot_out_egg))
   # first element as 3 columns and right no. rows
-  expect_equal(dim(plot_out_egg[[1]]), c(51,3))
+  expect_equal(dim(plot_out_egg[[1]]), c(11,3))
   # no NAs
   expect_true(!any(is.na(plot_out_egg[[1]])))
 
@@ -134,7 +134,7 @@ test_that('stochastic analyses work', {
   # list
   expect_true(is.list(plot_out_all))
   # first element as 3 columns and right no. rows
-  expect_equal(dim(plot_out_all[[1]]), c(51,3))
+  expect_equal(dim(plot_out_all[[1]]), c(11,3))
   # no NAs
   expect_true(!any(is.na(plot_out_all[[1]])))
 
