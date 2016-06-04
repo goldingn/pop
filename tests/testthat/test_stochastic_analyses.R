@@ -4,19 +4,29 @@ test_that('stochastic analyses work', {
 
   skip_on_cran()
 
-  # set up a simple model and initial population
+  # generate four types of dynamic
   stasis_egg <- tr(eggs ~ eggs, p(0.4))
   stasis_larva <- tr(larvae ~ larvae, p(0.3))
   stasis_adult <- tr(adults ~ adults, p(0.8))
   hatching <- tr(larvae ~ eggs, p(0.5))
+  fecundity <- tr(eggs ~ adults, p(0.2) * r(3))
   pupation <- tr(adults ~ larvae, p(0.2))
-  fecundity <- tr(eggs ~ adults, r(20))
+  clonal <- tr(larvae ~ larvae, r(1.4))
+
+  stasis <- dynamic(stasis_egg,
+                    stasis_larva,
+                    stasis_adult)
+  growth <- dynamic(hatching,
+                    pupation)
+  reproduction <- dynamic(fecundity,
+                          clonal)
   all <- dynamic(stasis_egg,
-                 stasis_larva,
-                 stasis_adult,
-                 hatching,
-                 pupation,
-                 fecundity)
+                  stasis_larva,
+                  stasis_adult,
+                  hatching,
+                  pupation,
+                  clonal,
+                  fecundity)
 
   population <- data.frame(eggs = 1000,
                            larvae = 200,

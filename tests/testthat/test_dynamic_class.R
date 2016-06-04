@@ -15,16 +15,16 @@ test_that('dynamic classes work', {
                     stasis_larva,
                     stasis_adult)
   growth <- dynamic(hatching,
-                    pupation,
-                    clonal)
-  reproduction <- dynamic(fecundity)
+                    pupation)
+  reproduction <- dynamic(fecundity,
+                          clonal)
   all1 <- dynamic(stasis_egg,
                   stasis_larva,
                   stasis_adult,
                   hatching,
                   pupation,
-                  clonal,
-                  fecundity)
+                  fecundity,
+                  clonal)
 
   # make sure adding dynamics is the same as compiling their transitions in
   # one go
@@ -44,7 +44,8 @@ test_that('dynamic classes work', {
                   stasis_larva,
                   stasis_adult,
                   growth,
-                  fecundity)
+                  fecundity,
+                  clonal)
   expect_equal(all4, all1)
 
   # check only one dynamic
@@ -87,7 +88,7 @@ test_that('dynamic classes work', {
   expect_equal(capture.output(print(all1)),
                'dynamic:	transitions between: egg, larva, adult')
   expect_equal(capture.output(print(reproduction)),
-               'dynamic:	transitions between: egg, adult')
+               'dynamic:	transitions between: egg, adult, larva')
 
   # check as.matrix
   mat_stasis <- as.matrix(stasis)
@@ -106,7 +107,7 @@ test_that('dynamic classes work', {
   # check dimensions are correct
   expect_equal(dim(mat_stasis), c(3, 3))
   expect_equal(dim(mat_growth), c(3, 3))
-  expect_equal(dim(mat_reproduction), c(2, 2))
+  expect_equal(dim(mat_reproduction), c(3, 3))
   expect_equal(dim(mat_all1), c(3, 3))
   expect_equal(dim(mat_all2), c(3, 3))
 
@@ -156,8 +157,8 @@ test_that('dynamic classes work', {
                              stasis_adult = list(p = 0.8),
                              hatching = list(p = 0.5),
                              pupation = list(p = 0.2),
-                             clonal = list(r = 1.4),
-                             fecundity = list(p = 0.2, r = 3))
+                             fecundity = list(p = 0.2, r = 3),
+                             clonal = list(r = 1.4))
 
   # check they're as expected in both dynamic creation methods
   expect_equal(parameters(all1), expected_param_all)
