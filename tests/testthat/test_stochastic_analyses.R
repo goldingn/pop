@@ -40,6 +40,13 @@ test_that('stochastic analyses work', {
                     replicates = 3,
                     ncores = 1)
 
+  # get a single simulationt oo, for testing plotting
+  sim1 <- simulation(dynamic = all,
+                    population = unlist(population),
+                    timesteps = 10,
+                    replicates = 1,
+                    ncores = 1)
+
   # check it has the right class and structure
   expect_s3_class(sim, 'simulation')
   expect_s3_class(sim$dynamic, 'dynamic')
@@ -129,17 +136,30 @@ test_that('stochastic analyses work', {
   # no NAs
   expect_true(!any(is.na(plot_out_egg[[1]])))
 
-  # check output structure for all state
-  plot_out_all <- plot(sim)
+  # for single simulation
+  plot_out_egg1 <- plot(sim1, state = 'eggs')
   # list
-  expect_true(is.list(plot_out_all))
+  expect_true(is.list(plot_out_egg1))
   # first element as 3 columns and right no. rows
-  expect_equal(dim(plot_out_all[[1]]), c(11,3))
-  # no NAs
-  expect_true(!any(is.na(plot_out_all[[1]])))
+  expect_equal(dim(plot_out_egg1[[1]]), c(11,3))
+  # NAs for CIs, not median
+  expect_false(anyNA(plot_out_egg1[[1]][, 2]))
+  expect_true(all(is.na(plot_out_egg1[[1]][, -2])))
+
+  # check output structure for all states
+  plot_out_all1 <- plot(sim1)
+  # list
+  expect_true(is.list(plot_out_all1))
+  # first element as 3 columns and right no. rows
+  expect_equal(dim(plot_out_all1[[1]]), c(11,3))
+  # NAs for CIs, not median
+  expect_false(anyNA(plot_out_all1[[1]][, 2]))
+  expect_true(all(is.na(plot_out_all1[[1]][, -2])))
 
   # error on bad states
   expect_error(plot(sim, state = 'bee'))
   expect_error(plot(sim, state = NA))
+  expect_error(plot(sim1, state = 'bee'))
+  expect_error(plot(sim1, state = NA))
 
 })
