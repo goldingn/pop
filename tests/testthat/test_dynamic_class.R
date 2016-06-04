@@ -26,7 +26,7 @@ test_that('dynamic classes work', {
                   clonal,
                   fecundity)
 
-  # make sure adding two dyanmics is the same as compiling their transitions in
+  # make sure adding dynamics is the same as compiling their transitions in
   # one go
   all2 <- dynamic(stasis, growth, reproduction)
   expect_equal(all2, all1)
@@ -46,6 +46,11 @@ test_that('dynamic classes work', {
                   growth,
                   fecundity)
   expect_equal(all4, all1)
+
+  # check only one dynamic
+  growth2 <- dynamic(growth)
+  expect_equal(growth2, growth)
+
 
   # check they have the right class
   expect_s3_class(stasis, 'dynamic')

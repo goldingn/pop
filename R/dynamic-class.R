@@ -391,7 +391,7 @@ unpackDynamics <- function (object) {
   # if it's just one dynamic, return it as is
   if (length(dynamics) == 1 && dynamics) {
 
-    object <- x
+    object <- object[[1]]
 
   } else if (any(dynamics)) {
 
