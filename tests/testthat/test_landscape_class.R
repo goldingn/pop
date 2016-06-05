@@ -23,7 +23,7 @@ test_that('landscape classes work', {
 
   ls_all <- landscape(all)
   ls_null <- as.landscape(NULL)
-  ls_list <- as.landscape(list(coordinates = data.frame(x = 0, y = 0),
+  ls_list <- as.landscape(list(coordinates = data.frame(x = runif(3), y = runif(3)),
                                area = data.frame(area = c(10, 15, 12)),
                                population = data.frame(eggs = 1,
                                                        larvae = 3,
@@ -89,16 +89,21 @@ test_that('landscape classes work', {
   # wrong dimension
   expect_error(features(ls_all) <- 3)
 
-  # getting and setting coordinates
-  expect_equal(coordinates(ls_all),
-               data.frame(x = 0, y = 0))
-  coordinates(ls_all) <- data.frame(x = 10, y = 11)
-  expect_equal(coordinates(ls_all),
-               data.frame(x = 10, y = 11))
+  # getting and setting distance matrices
+  distance_list <- distance(ls_list)
+  expect_true(is.matrix(distance_list))
+  expect_true(all(diag(distance_list) == 0))
+  expect_equal(dim(distance_list), c(3, 3))
+
+  distance(ls_list) <- as.matrix(dist(runif(3)))
+
+  expect_true(is.matrix(distance(ls_list)))
+  expect_true(all(diag(distance(ls_list)) == 0))
+  expect_equal(dim(distance(ls_list)), c(3, 3))
 
   # wrong dimension
-  expect_error(coordinates(ls_all) <- 3)
-  expect_error(coordinates(ls_all) <- data.frame(x = 10))
-  expect_error(coordinates(ls_all) <- data.frame(lat = 10, long = 9))
+  expect_error(distance(ls_all) <- 3)
+  expect_error(distance(ls_all) <- data.frame(x = 10))
+  expect_error(distance(ls_all) <- as.matrix(dist(runif(4))))
 
 })

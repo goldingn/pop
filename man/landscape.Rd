@@ -4,8 +4,8 @@
 \alias{area}
 \alias{area<-}
 \alias{as.landscape}
-\alias{coordinates}
-\alias{coordinates<-}
+\alias{distance}
+\alias{distance<-}
 \alias{features}
 \alias{features<-}
 \alias{is.landscape}
@@ -38,16 +38,16 @@ features(landscape)
 
 features(landscape) <- value
 
-coordinates(landscape)
+distance(landscape)
 
-coordinates(landscape) <- value
+distance(landscape) <- value
 }
 \arguments{
 \item{dynamic}{an object of class \code{dynamic}}
 
 \item{value}{an object of class \code{landscape} (for
 \code{landscape(dynamic) <- value}) or the value to assign to the
-\code{coordinates}, \code{area}, \code{population}, or \code{features}
+\code{distance}, \code{area}, \code{population}, or \code{features}
 elements of a \code{landscape} object}
 
 \item{patches}{an object to turn into a \code{landscape} object. Currently
@@ -73,8 +73,8 @@ an object of class \code{landscape}, essentially a dataframe
   \code{landscape} object (by default a single-patch landscape) as a an
   attribute which can be accessed and set via the function \code{landscape}.
   \code{as.landscape} is used to create landscape objects, and the functions
-  \code{population}, \code{area}, \code{coordinates} and \code{features}
-  access and set each of the trhee key elements of a landscape.
+  \code{population}, \code{area}, \code{distance} and \code{features}
+  access and set each of the elements of a landscape.
 }
 \details{
 The accessor function \code{landscape} either returns or sets the
@@ -98,7 +98,7 @@ The accessor function \code{landscape} either returns or sets the
   This is what's used when analysing a \code{dynamic} object without
   user-specified metapopulation structure.
 
-the accessor functions \code{coordinates}, \code{area},
+the accessor functions \code{distance}, \code{area},
   \code{population} and \code{features} either return or set corresponding
   sub-dataframes of the \code{landscape} object
 }
@@ -130,10 +130,10 @@ features(landscape)
 features(landscape) <- cbind(features(landscape), rainfall = 100)
 features(landscape)
 
-# get and set the features
-coordinates(landscape)
-coordinates(landscape) <- c(x = 3, y = 1)
-coordinates(landscape)
+# get and set the distance matrix
+distance(landscape)
+distance(landscape) <- sqrt(distance(landscape))
+distance(landscape)
 
 }
 

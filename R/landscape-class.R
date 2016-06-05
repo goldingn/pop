@@ -8,12 +8,12 @@
 #'   \code{landscape} object (by default a single-patch landscape) as a an
 #'   attribute which can be accessed and set via the function \code{landscape}.
 #'   \code{as.landscape} is used to create landscape objects, and the functions
-#'   \code{population}, \code{area}, \code{coordinates} and \code{features}
-#'   access and set each of the trhee key elements of a landscape.
+#'   \code{population}, \code{area}, \code{distance} and \code{features}
+#'   access and set each of the elements of a landscape.
 #' @param dynamic an object of class \code{dynamic}
 #' @param value an object of class \code{landscape} (for
 #'   \code{landscape(dynamic) <- value}) or the value to assign to the
-#'   \code{coordinates}, \code{area}, \code{population}, or \code{features}
+#'   \code{distance}, \code{area}, \code{population}, or \code{features}
 #'   elements of a \code{landscape} object
 
 #' @export
@@ -98,7 +98,7 @@ print.landscape <- function(x, ...) {
 #' @rdname landscape
 #' @export
 #' @param landscape an object of class \code{landscape}
-#' @details the accessor functions \code{coordinates}, \code{area},
+#' @details the accessor functions \code{distance}, \code{area},
 #'   \code{population} and \code{features} either return or set corresponding
 #'   sub-dataframes of the \code{landscape} object
 #' @examples
@@ -191,11 +191,26 @@ features <- function (landscape) {
 #' @rdname landscape
 #' @export
 #' @examples
-#'# get and set the features
-#' coordinates(landscape)
-#' coordinates(landscape) <- c(x = 3, y = 1)
-#' coordinates(landscape)
+#'# get and set the distance matrix
+#' distance(landscape)
+#' distance(landscape) <- sqrt(distance(landscape))
+#' distance(landscape)
 #'
+distance <- function (landscape) {
+  stopifnot(is.landscape(landscape))
+  ans <- attr(landscape, 'distance')
+  return (ans)
+}
+
+#' @rdname landscape
+#' @export
+`distance<-` <- function (landscape, value) {
+  stopifnot(is.landscape(landscape))
+  distanceCheck(value, landscape)
+  attr(landscape, 'distance') <- value
+  landscape
+}
+
 coordinates <- function (landscape) {
   stopifnot(is.landscape(landscape))
   ans <- landscape[, attr(landscape, 'coordinates'), drop = FALSE]
@@ -203,8 +218,6 @@ coordinates <- function (landscape) {
   return (ans)
 }
 
-#' @rdname landscape
-#' @export
 `coordinates<-` <- function (landscape, value) {
   stopifnot(is.landscape(landscape))
   stopifnot(all.equal(names(coordinates(landscape)), names(value)))
@@ -224,6 +237,15 @@ populationCheck <- function (population) {
   stopifnot(all(sapply(population, function(x) all(x >= 0))))
 }
 
+distanceCheck <- function (distance, landscape) {
+  stopifnot(is.matrix(distance))
+  stopifnot(nrow(distance) == ncol(distance))
+  stopifnot(nrow(distance) == nrow(landscape))
+  stopifnot(all(is.finite(distance)))
+  stopifnot(all(distance >= 0))
+  stopifnot(all(diag(distance) == 0))
+}
+
 list2landscape <- function (list) {
 
   # check the elements
@@ -235,13 +257,14 @@ list2landscape <- function (list) {
   areaCheck(list$area)
   populationCheck(list$population)
 
-  # reset order
+  # reset order and tidy up row names
   suppressWarnings(landscape <- data.frame(list$coordinates,
                                            area = list$area,
                                            list$population,
                                            list$features))
   rownames(landscape) <- 1:nrow(landscape)
 
+  # work out column numbers
   ncoord <- ncol(list$coordinates)
   narea <- 1
   npop <- ncol(list$population)
@@ -252,8 +275,15 @@ list2landscape <- function (list) {
   attr(landscape, 'population') <- seq_len(npop) + narea + ncoord
   attr(landscape, 'features') <- seq_len(nfeat) + npop + narea + ncoord
 
-  # set class & return
+  # set class
   class(landscape) <- c('landscape', class(landscape))
+
+  # add distance matrix
+  coord <- coordinates(landscape)
+  distance <- as.matrix(dist(coord))
+  distance(landscape) <- distance
+
+  # set class & return
   return (landscape)
 
 }
