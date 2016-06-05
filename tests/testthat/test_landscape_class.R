@@ -23,7 +23,8 @@ test_that('landscape classes work', {
 
   ls_all <- landscape(all)
   ls_null <- as.landscape(NULL)
-  ls_list <- as.landscape(list(area = c(10, 15, 12),
+  ls_list <- as.landscape(list(coordinates = data.frame(x = 0, y = 0),
+                               area = data.frame(area = c(10, 15, 12)),
                                population = data.frame(eggs = 1,
                                                        larvae = 3,
                                                        adults = 12),
@@ -51,17 +52,17 @@ test_that('landscape classes work', {
                'landscape with 3 patches')
 
   # getting and setting areas
-  expect_equal(area(ls_all), 1)
-  area(ls_all) <- 3
-  expect_equal(area(ls_all), 3)
+  expect_equal(area(ls_all)$area, 1)
+  area(ls_all) <- data.frame(area = 3)
+  expect_equal(area(ls_all)$area, 3)
 
-  expect_equal(area(ls_null), 1)
-  area(ls_null) <- 3
-  expect_equal(area(ls_null), 3)
+  expect_equal(area(ls_null)$area, 1)
+  area(ls_null) <- data.frame(area = 3)
+  expect_equal(area(ls_null)$area, 3)
 
-  expect_equal(area(ls_list), c(10, 15, 12))
-  area(ls_list) <- 3:1
-  expect_equal(area(ls_list), 3:1)
+  expect_equal(area(ls_list)$area, c(10, 15, 12))
+  area(ls_list) <- data.frame(area = 3:1)
+  expect_equal(area(ls_list)$area, 3:1)
 
   # wrong length
   expect_error(area(ls_list) <- 3)
@@ -72,17 +73,12 @@ test_that('landscape classes work', {
   population(ls_all) <- population(ls_all) + 3
   expect_equal(population(ls_all),
                data.frame(eggs = 3, larvae = 3, adults = 3))
-  expect_equal(population(ls_all, 'eggs'),
-               3)
 
   # wrong lengths
   expect_error(population(ls_all) <- 3)
-  expect_error(population(ls_all, 'bees'))
-
 
   # getting and setting features
-  expect_equal(features(ls_all),
-               data.frame()[1, ])
+  expect_equal(dim(features(ls_all)), c(1, 0))
   features(ls_all) <- data.frame(temp = 10, rainfall = 11)
   expect_equal(features(ls_all),
                data.frame(temp = 10, rainfall = 11))

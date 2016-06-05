@@ -8,13 +8,13 @@
 #'   \code{landscape} object (by default a single-patch landscape) as a an
 #'   attribute which can be accessed and set via the function \code{landscape}.
 #'   \code{as.landscape} is used to create landscape objects, and the functions
-#'   \code{population}, \code{area} and \code{features} access and set each of
-#'   the trhee key elements of a landscape.
+#'   \code{population}, \code{area}, \code{coordinates} and \code{features}
+#'   access and set each of the trhee key elements of a landscape.
 #' @param dynamic an object of class \code{dynamic}
 #' @param value an object of class \code{landscape} (for
 #'   \code{landscape(dynamic) <- value}) or the value to assign to the
-#'   \code{area}, \code{population}, or \code{features} elements of a
-#'   \code{landscape} object
+#'   \code{coordinates}, \code{area}, \code{population}, or \code{features}
+#'   elements of a \code{landscape} object
 
 #' @export
 #' @details The accessor function \code{landscape} either returns or sets the
@@ -40,19 +40,21 @@ landscape <- function (dynamic) {
 #' @param patches an object to turn into a \code{landscape} object. Currently
 #'   this can either be a dynamic, a list or \code{NULL} (see \code{details}),
 #'   though more approaches will be added in the future
-#' @return an object of class \code{landscape}, with elements \code{area},
-#'   \code{population}, \code{features} providing information about all
-#'   component habitat patches
+#' @return an object of class \code{landscape}, essentially a dataframe
+#'   containing the coordinates, area, population and features (as columns) for
+#'   each patch (rows)
 #' @export
 #' @details \code{patches} can be a list containing the following elements:
 #'   \code{population}, a dataframe giving the number of individuals of each
-#'   stage (columns) within each patch (rows); \code{area}, a numeric vector
-#'   giving the areas of the patches in square kilometres; and \code{features},
-#'   a dataframe containing miscellaneous features (columns) of the patches
-#'   (rows), such as measures of patch quality or environmental variables.
-#'   Alternatively, \code{patches = NULL}, will set up a 'default' one-patch
-#'   landscape with \code{area = 1} and blank \code{population} and
-#'   \code{features} elements. The other option is to pass a \code{dynamic}
+#'   stage (columns) within each patch (rows); \code{area}, a one-column
+#'   dataframe giving the areas of the patches in square kilometres;
+#'   \code{coordinates}, a dataframe giving the coordinates of the habitat
+#'   patches; and \code{features}, a dataframe containing miscellaneous features
+#'   (columns) of the patches (rows), such as measures of patch quality or
+#'   environmental variables. Alternatively, \code{patches = NULL}, will set up
+#'   a 'default' one-patch landscape with \code{area = data.frame(area =1)},
+#'   \code{coordinates = data.frame(x = 0, y = 0)} and blank \code{population}
+#'   and \code{features} elements. The other option is to pass a \code{dynamic}
 #'   object as \code{patches}, in which case the set up will be the same as for
 #'   \code{patches = NULL} except that \code{population} will be a one-row
 #'   dataframe of 0s, with columns corresponding to the states in the dynamic.
@@ -63,9 +65,11 @@ landscape <- function (dynamic) {
 #' landscape <- as.landscape(NULL)
 #'
 #' # create a marginally more interesting one-patch landscape
-#' landscape <- as.landscape(list(area = 10,
+#' landscape <- as.landscape(list(coordinates = data.frame(x = 10, y = 11),
+#'                     area = data.frame(area = 10),
 #'                     population = data.frame(adult = 10, larva = 3, egg = 20),
 #'                     features = data.frame(temperature = 10)))
+#'
 as.landscape <- function (patches) {
   switch(class(patches)[1],
          NULL = landscapeDefault(),
@@ -87,69 +91,61 @@ is.landscape <- function (x) inherits(x, 'landscape')
 #'
 print.landscape <- function(x, ...) {
   text <- sprintf('landscape with %s patches\n',
-                  length(x$area))
+                  nrow(x))
   cat(text)
 }
 
 #' @rdname landscape
 #' @export
 #' @param landscape an object of class \code{landscape}
-#' @details the accessor functions \code{area}, \code{population} and
-#'   \code{features} either return or set the elements of the same name in a
-#'   \code{landscape} object
+#' @details the accessor functions \code{coordinates}, \code{area},
+#'   \code{population} and \code{features} either return or set corresponding
+#'   sub-dataframes of the \code{landscape} object
 #' @examples
 #' # get and set the area
 #' area(landscape)
-#' area(landscape) <- 2
+#' area(landscape) <- area(landscape) * 2
 #' area(landscape)
 #'
 area <- function (landscape) {
   stopifnot(is.landscape(landscape))
-  return(landscape$area)
+  ans <- landscape[, attr(landscape, 'area'), drop = FALSE]
+  ans <- squashLandscape(ans)
+  return (ans)
 }
 
 #' @rdname landscape
 #' @export
 `area<-` <- function (landscape, value) {
+  areaCheck(value)
   stopifnot(is.landscape(landscape))
-  areaCheck(value, landscape)
-  landscape$area <- value
-  return(landscape)
+  landscape[, attr(landscape, 'area')] <- value
+  landscape
 }
 
-#'@rdname landscape
-#'@param states an optional character vector naming the states for which the
-#'  populations are required
-#'@export
+#' @rdname landscape
+#' @export
 #' @examples
 #'# get and set the population
 #' population(landscape)
 #' population(landscape) <- population(landscape) * 2
 #' population(landscape)
 #'
-population <- function (landscape, states = NULL) {
+population <- function (landscape) {
   stopifnot(is.landscape(landscape))
-
-  # extract the population
-  pop <- landscape$population
-
-  # if which speecified, get those elements
-  if (!is.null(states)) {
-    stopifnot(all(states %in% names(landscape$population)))
-    pop <- pop[, states]
-  }
-
-  # return the requested populations
-  return (pop)
+  ans <- landscape[, attr(landscape, 'population'), drop = FALSE]
+  ans <- squashLandscape(ans)
+  return (ans)
 }
 
 #' @rdname landscape
 #' @export
 `population<-` <- function (landscape, value) {
   stopifnot(is.landscape(landscape))
-  populationCheck(value, landscape)
-  landscape$population <- value
-  return (landscape)
+  populationCheck(value)
+  stopifnot(all.equal(names(population(landscape)), names(value)))
+  landscape[, attr(landscape, 'population')] <- value
+  landscape
 }
 
 #' @rdname landscape
@@ -162,60 +158,99 @@ population <- function (landscape, states = NULL) {
 #'
 features <- function (landscape) {
   stopifnot(is.landscape(landscape))
-  return (landscape$features)
+  ans <- landscape[, attr(landscape, 'features'), drop = FALSE]
+  ans <- squashLandscape(ans)
+  return (ans)
 }
 
 #' @rdname landscape
 #' @export
 `features<-` <- function (landscape, value) {
   stopifnot(is.landscape(landscape))
-  featuresCheck(value, landscape)
-  landscape$features <- value
-  return (landscape)
-}
+  stopifnot(is.data.frame(value))
 
-areaCheck <- function (area, landscape = NULL) {
-  stopifnot(is.numeric(area))
-  stopifnot(all(is.finite(area)))
-  stopifnot(all(area > 0))
-  if (!is.null(landscape)) {
-    stopifnot(length(area) == length(area(landscape)))
+  # for features, just overwrite whatever's there - including column numbers
+  feature_cols <- attr(landscape, 'features')
+
+  if (is.null(feature_cols) | length(feature_cols) == 0) {
+    # if null (currently no features), add them
+    attr(landscape, 'features') <- ncol(landscape) + 1:ncol(value)
+  } else {
+    # if not null (currently some features), overwrite them
+    attrib <- attributes(landscape)
+    attrib$names <- attrib$names[-feature_cols]
+    # attrib$names
+    landscape <- landscape[, -feature_cols]
+    attributes(landscape) <- attrib
+    attr(landscape, 'features') <- ncol(landscape) + seq_len(ncol(value))
   }
+  landscape[, attr(landscape, 'features')] <- value
+  landscape
 }
 
-populationCheck <- function (population, landscape = NULL) {
-  stopifnot(is.data.frame(population))
-  stopifnot(all(!is.null(names(population))))
+#' @rdname landscape
+#' @export
+#' @examples
+#'# get and set the features
+#' coordinates(landscape)
+#' coordinates(landscape) <- c(x = 3, y = 1)
+#' coordinates(landscape)
+#'
+coordinates <- function (landscape) {
+  stopifnot(is.landscape(landscape))
+  ans <- landscape[, attr(landscape, 'coordinates'), drop = FALSE]
+  ans <- squashLandscape(ans)
+  return (ans)
+}
+
+#' @rdname landscape
+#' @export
+`coordinates<-` <- function (landscape, value) {
+  stopifnot(is.landscape(landscape))
+  stopifnot(all.equal(names(coordinates(landscape)), names(value)))
+  landscape[, attr(landscape, 'coordinates')] <- value
+  landscape
+}
+
+areaCheck <- function (area) {
+  stopifnot(ncol(area) == 1)
+  stopifnot(is.numeric(area[, 1]))
+  stopifnot(all(is.finite(area[, 1])))
+  stopifnot(all(area[, 1] > 0))
+}
+
+populationCheck <- function (population) {
   stopifnot(all(sapply(population, is.finite)))
   stopifnot(all(sapply(population, function(x) all(x >= 0))))
-  if (!is.null(landscape)) {
-    stopifnot(all(dim(population) == dim(population(landscape))))
-  }
-}
-
-featuresCheck <- function (features, landscape = NULL) {
-  stopifnot(is.data.frame(features))
-  stopifnot(all(!is.null(names(features))))
-  if (!is.null(landscape)) {
-    stopifnot(nrow(features) == nrow(features(landscape)))
-  }
 }
 
 list2landscape <- function (list) {
 
   # check the elements
-  stopifnot(length(list) == 3)
-  stopifnot(sort(names(list)) == c('area', 'features', 'population'))
+  stopifnot(length(list) == 4)
+  stopifnot(sort(names(list)) == c('area', 'coordinates', 'features', 'population'))
+  stopifnot(all(sapply(list, is.data.frame)))
 
   # check components
   areaCheck(list$area)
   populationCheck(list$population)
-  featuresCheck(list$features)
 
   # reset order
-  landscape <- list(area = list$area,
-                population = list$population,
-                features = list$features)
+  suppressWarnings(landscape <- data.frame(list$coordinates,
+                                           area = list$area,
+                                           list$population,
+                                           list$features))
+  rownames(landscape) <- 1:nrow(landscape)
+
+  ncoord <- ncol(list$coordinates)
+  narea <- 1
+  npop <- ncol(list$population)
+  nfeat <- ncol(list$features)
+
+  attr(landscape, 'coordinates') <- seq_len(ncoord)
+  attr(landscape, 'area') <- narea + ncoord
+  attr(landscape, 'population') <- seq_len(npop) + narea + ncoord
+  attr(landscape, 'features') <- seq_len(nfeat) + npop + narea + ncoord
 
   # set class & return
   class(landscape) <- c('landscape', class(landscape))
@@ -225,10 +260,11 @@ list2landscape <- function (list) {
 
 # default standalone landscape
 landscapeDefault <- function () {
-  landscape <- list(area = 1,
-                population = data.frame()[1, ],
-                features = data.frame()[1, ])
-  class(landscape) <- c('landscape', class(landscape))
+  landscape_list <- list(coordinates = data.frame(x = 0, y = 0),
+                         area = data.frame(area = 1),
+                         population = data.frame()[1, ],
+                         features = data.frame()[1, ])
+  landscape <- list2landscape(landscape_list)
   return (landscape)
 }
 
@@ -237,9 +273,21 @@ dynamicLandscapeDefault <- function (dynamic) {
   population <- as.list(rep(0, length(states(dynamic))))
   names(population) <- states(dynamic)
   population <- as.data.frame(population)
-  landscape <- list(area = 1,
-                population = population,
-                features = data.frame()[1, ])
-  class(landscape) <- c('landscape', class(landscape))
+  landscape_list <- list(coordinates = data.frame(x = 0, y = 0),
+                         area = data.frame(area = 1),
+                         population = population,
+                         features = data.frame()[1, ])
+  landscape <- list2landscape(landscape_list)
   return (landscape)
+}
+
+squashLandscape <- function (x) {
+  # if an object is a landscape, remove the landscape class (to make it a
+  # dataframe again)
+  if (is.landscape(x)) {
+    classes <- class(x)
+    classes <- classes[-which(classes == 'landscape')]
+    class(x) <- classes
+  }
+  return (x)
 }
