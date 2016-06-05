@@ -6,7 +6,7 @@
 \alias{pop-package}
 \title{pop: A Flexible Syntax for Population Dynamic Modelling}
 \description{
-Population dynamic models underpin a range of analyses and
+Models of population dynamics underpin a range of analyses and
   applications in ecology and epidemiology. The various approaches for
   fitting and analysing these models (MPMs, IPMs, ODEs, POMPs, PVA, with and
   without metapopulation structure) are generally fitted using different

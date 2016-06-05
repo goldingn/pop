@@ -4,6 +4,8 @@
 \alias{area}
 \alias{area<-}
 \alias{as.landscape}
+\alias{distance}
+\alias{distance<-}
 \alias{features}
 \alias{features<-}
 \alias{is.landscape}
@@ -28,21 +30,25 @@ area(landscape)
 
 area(landscape) <- value
 
-population(landscape, states = NULL)
+population(landscape)
 
 population(landscape) <- value
 
 features(landscape)
 
 features(landscape) <- value
+
+distance(landscape)
+
+distance(landscape) <- value
 }
 \arguments{
 \item{dynamic}{an object of class \code{dynamic}}
 
 \item{value}{an object of class \code{landscape} (for
 \code{landscape(dynamic) <- value}) or the value to assign to the
-\code{area}, \code{population}, or \code{features} elements of a
-\code{landscape} object}
+\code{distance}, \code{area}, \code{population}, or \code{features}
+elements of a \code{landscape} object}
 
 \item{patches}{an object to turn into a \code{landscape} object. Currently
 this can either be a dynamic, a list or \code{NULL} (see \code{details}),
@@ -52,15 +58,12 @@ though more approaches will be added in the future}
 
 \item{landscape}{an object of class \code{landscape}}
 
-\item{states}{an optional character vector naming the states for which the
-populations are required}
-
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \value{
-an object of class \code{landscape}, with elements \code{area},
-  \code{population}, \code{features} providing information about all
-  component habitat patches
+an object of class \code{landscape}, essentially a dataframe
+  containing the coordinates, area, population and features (as columns) for
+  each patch (rows)
 }
 \description{
 \code{landscape} objects represent sets of patches forming a
@@ -70,8 +73,8 @@ an object of class \code{landscape}, with elements \code{area},
   \code{landscape} object (by default a single-patch landscape) as a an
   attribute which can be accessed and set via the function \code{landscape}.
   \code{as.landscape} is used to create landscape objects, and the functions
-  \code{population}, \code{area} and \code{features} access and set each of
-  the trhee key elements of a landscape.
+  \code{population}, \code{area}, \code{distance} and \code{features}
+  access and set each of the elements of a landscape.
 }
 \details{
 The accessor function \code{landscape} either returns or sets the
@@ -80,37 +83,41 @@ The accessor function \code{landscape} either returns or sets the
 
 \code{patches} can be a list containing the following elements:
   \code{population}, a dataframe giving the number of individuals of each
-  stage (columns) within each patch (rows); \code{area}, a numeric vector
-  giving the areas of the patches in square kilometres; and \code{features},
-  a dataframe containing miscellaneous features (columns) of the patches
-  (rows), such as measures of patch quality or environmental variables.
-  Alternatively, \code{patches = NULL}, will set up a 'default' one-patch
-  landscape with \code{area = 1} and blank \code{population} and
-  \code{features} elements. The other option is to pass a \code{dynamic}
+  stage (columns) within each patch (rows); \code{area}, a one-column
+  dataframe giving the areas of the patches in square kilometres;
+  \code{coordinates}, a dataframe giving the coordinates of the habitat
+  patches; and \code{features}, a dataframe containing miscellaneous features
+  (columns) of the patches (rows), such as measures of patch quality or
+  environmental variables. Alternatively, \code{patches = NULL}, will set up
+  a 'default' one-patch landscape with \code{area = data.frame(area =1)},
+  \code{coordinates = data.frame(x = 0, y = 0)} and blank \code{population}
+  and \code{features} elements. The other option is to pass a \code{dynamic}
   object as \code{patches}, in which case the set up will be the same as for
   \code{patches = NULL} except that \code{population} will be a one-row
   dataframe of 0s, with columns corresponding to the states in the dynamic.
   This is what's used when analysing a \code{dynamic} object without
   user-specified metapopulation structure.
 
-the accessor functions \code{area}, \code{population} and
-  \code{features} either return or set the elements of the same name in a
-  \code{landscape} object
+the accessor functions \code{distance}, \code{area},
+  \code{population} and \code{features} either return or set corresponding
+  sub-dataframes of the \code{landscape} object
 }
 \examples{
 # create a default landscape
 landscape <- as.landscape(NULL)
 
 # create a marginally more interesting one-patch landscape
-landscape <- as.landscape(list(area = 10,
+landscape <- as.landscape(list(coordinates = data.frame(x = 10, y = 11),
+                    area = data.frame(area = 10),
                     population = data.frame(adult = 10, larva = 3, egg = 20),
                     features = data.frame(temperature = 10)))
+
 # print method
 print(landscape)
 
 # get and set the area
 area(landscape)
-area(landscape) <- 2
+area(landscape) <- area(landscape) * 2
 area(landscape)
 
 # get and set the population
@@ -122,6 +129,11 @@ population(landscape)
 features(landscape)
 features(landscape) <- cbind(features(landscape), rainfall = 100)
 features(landscape)
+
+# get and set the distance matrix
+distance(landscape)
+distance(landscape) <- sqrt(distance(landscape))
+distance(landscape)
 
 }
 
