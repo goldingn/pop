@@ -2,6 +2,7 @@
 
 S3method("*",transfun)
 S3method("*",transition)
+S3method("[[",landscape)
 S3method("parameters<-",dynamic)
 S3method("parameters<-",transfun)
 S3method("parameters<-",transition)

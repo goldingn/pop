@@ -144,17 +144,43 @@ print.dynamic <- function (x, ...) {
 #' as.matrix(all)
 as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
-  user_defined <- sapply(x,
-                         function (z) containsUserTransfun(z$transfun))
-
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
-  mat <- switch(which,
-                `A` = getA(x),
-                `P` = getP(x),
-                `F` = getF(x),
-                `R` = getR(x))
+  # find the numbers of patches and states
+  n_patches <- nrow(landscape(x))
+  n_states <-  length(states(x))
+  n_cells <- n_patches * n_states
+
+  if (n_patches > 1) {
+    # if there are multiple patches, set up metamatrix
+    mat <- matrix(0, n_cells, n_cells)
+
+    # loop through them patches getting the demographic components
+    for (patch in seq_len(n_patches)) {
+      sub_dynamic <- x
+      landscape(sub_dynamic) <- landscape(x)[[patch]]
+      sub_mat <- as.matrix(sub_dynamic, which = which, ...)
+      idx <- (patch - 1) * n_states + seq_len(n_states)
+      mat[idx, idx] <- sub_mat
+    }
+
+    # get the dispersal probabilities and add to matrix in correct places
+
+    # need to scale by survival, but only if that happens first...
+    # OR make clear in the docs that this is a special case and always happens
+    # last?
+
+  } else {
+
+    # if only one patch, just get teh demographic component
+    mat <- switch(which,
+                  `A` = getA(x),
+                  `P` = getP(x),
+                  `F` = getF(x),
+                  `R` = getR(x))
+
+  }
 
   # set class and return
   class(mat) <- c(class(mat), 'transition_matrix')

@@ -65,11 +65,13 @@ landscape <- function (dynamic) {
 #' landscape <- as.landscape(NULL)
 #'
 #' # create a marginally more interesting one-patch landscape
-#' landscape <- as.landscape(list(coordinates = data.frame(x = 10, y = 11),
-#'                     area = data.frame(area = 10),
-#'                     population = data.frame(adult = 10, larva = 3, egg = 20),
-#'                     features = data.frame(temperature = 10)))
-#'
+#' landscape <- as.landscape(list(coordinates = data.frame(x = c(10, 11),
+#'                                                         y = c(11, 12)),
+#'                                area = data.frame(area = 10),
+#'                                population = data.frame(adult = 10,
+#'                                                        larva = 3,
+#'                                                        egg = 20),
+#'                                features = data.frame(temperature = 10)))
 as.landscape <- function (patches) {
   switch(class(patches)[1],
          NULL = landscapeDefault(),
@@ -208,7 +210,28 @@ distance <- function (landscape) {
   stopifnot(is.landscape(landscape))
   distanceCheck(value, landscape)
   attr(landscape, 'distance') <- value
-  landscape
+  return (landscape)
+}
+
+#' @rdname landscape
+#' @export
+#' @examples
+#' # landscapes can be subsetted to get sub-landscapes of patches with double
+#' # braces
+#' landscape
+#' landscape[[1]]
+#' landscape[[1:2]]
+#'
+`[[.landscape` <- function (x, i) {
+  attrib <- attributes(x)
+  attrib$row.names <- attrib$row.names[i]
+  d <- attrib$distance[i, i, drop = FALSE]
+  rownames(d) <- colnames(d) <- seq_along(i)
+  attrib$distance <- d
+  x <- pop:::squashLandscape(x)
+  x <- x[i, ]
+  attributes(x) <- attrib
+  return (x)
 }
 
 coordinates <- function (landscape) {

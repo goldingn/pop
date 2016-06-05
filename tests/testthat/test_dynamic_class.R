@@ -170,4 +170,23 @@ test_that('dynamic classes work', {
   parameters(all1) <- expected_param_all_updated
   expect_equal(parameters(all1), expected_param_all_updated)
 
+  # ~~~~~~~~~~
+  # test multi-patch models run and can be analysed in the same way
+
+  # pick a dynamic and give it lots of patches
+  all <- all1
+  ls <- landscape(all)
+  n <- 10
+  ls_new <- as.landscape(list(coordinates = data.frame(x = runif(n),
+                                                       y = runif(n)),
+                              area = area(ls),
+                              population = population(ls),
+                              features = features(ls)))
+  landscape(all) <- ls_new
+
+  # see what happens when we make a matrix
+  mat <- as.matrix(all)
+  expect_true(is.matrix(mat))
+  expect_equal(dim(mat), rep(n * 3, 2))
+
 })
