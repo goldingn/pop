@@ -70,7 +70,6 @@ as.dynamic <- function (x) {
 #' @param x a dynamic object to print, plot, convert to a transition matrix, or
 #'   an object to test as a dynamic object (for \code{is.dynamic}),
 #' @export
-#' @import igraph
 #' @examples
 #' # plot these
 #' plot(stasis)
