@@ -82,8 +82,23 @@ test_that('landscape classes work', {
   features(ls_all) <- data.frame(temp = 10, rainfall = 11)
   expect_equal(features(ls_all),
                data.frame(temp = 10, rainfall = 11))
+  features(ls_all) <- data.frame(aridity = -1)
+  expect_equal(features(ls_all),
+               data.frame(aridity = -1))
 
   # wrong dimension
   expect_error(features(ls_all) <- 3)
+
+  # getting and setting coordinates
+  expect_equal(coordinates(ls_all),
+               data.frame(x = 0, y = 0))
+  coordinates(ls_all) <- data.frame(x = 10, y = 11)
+  expect_equal(coordinates(ls_all),
+               data.frame(x = 10, y = 11))
+
+  # wrong dimension
+  expect_error(coordinates(ls_all) <- 3)
+  expect_error(coordinates(ls_all) <- data.frame(x = 10))
+  expect_error(coordinates(ls_all) <- data.frame(lat = 10, long = 9))
 
 })
