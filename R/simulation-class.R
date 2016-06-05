@@ -285,6 +285,9 @@ stoch_prob <- function (expectation, N) {
 stoch_rate <- function (expectation, N) {
   rpois(n = length(N), lambda = N * expectation)
 }
+stoch_disp <- function (expectation, N) {
+  rdisp(N, expectation)
+}
 
 stoch <- function (transfun, N, landscape) {
   # given a parameter value, a number of individuals in the *from* state,
@@ -306,7 +309,8 @@ stoch <- function (transfun, N, landscape) {
     # otherwise execute the transition
     N <- switch(type,
                 probability = stoch_prob(transfun(landscape), N),
-                rate = stoch_rate(transfun(landscape), N))
+                rate = stoch_rate(transfun(landscape), N),
+                dispersal = stoch_disp(transfun(landscape), N))
 
   }
 
@@ -358,3 +362,13 @@ as.simulation <- function (x) {
   }
   return (x)
 }
+
+rdisp <- function(N, p) {
+  # random multinomial draws on a square matrix
+  disp <- N * 0
+  for (i in seq_along(N)) {
+    disp <- disp + rmultinom(1, N[i], p[i, ])
+  }
+  return (disp[, 1])
+}
+

@@ -4,7 +4,7 @@
 \alias{as.transfun}
 \title{create a transition function}
 \usage{
-as.transfun(fun, param, type = c("probability", "rate"))
+as.transfun(fun, param, type = c("probability", "rate", "dispersal"))
 }
 \arguments{
 \item{fun}{an R function describing the transition. This must take only one

@@ -2,7 +2,7 @@
 
 transfunClasses <- function () {
   # list all available classes of transfun
-  c('probability', 'rate', 'compound')
+  c('probability', 'rate', 'dispersal', 'compound')
 }
 
 transfunType <- function (x) {
@@ -79,7 +79,9 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function (landscape) x(landscape) * y(landscape)
+  z <- function (landscape) {
+    productExpectation(x(landscape), y(landscape))
+  }
   z <- as.compound(z)
   return (z)
 }
@@ -125,7 +127,9 @@ as.compound <- function (x) {
 #'                                     range = 10),
 #'                        type = 'probability')
 #'
-as.transfun <- function (fun, param, type = c('probability', 'rate')) {
+as.transfun <- function (fun,
+                         param,
+                         type = c('probability', 'rate', 'dispersal')) {
 
   # line up the transfun type
   type <- match.arg(type)
@@ -147,7 +151,8 @@ as.transfun <- function (fun, param, type = c('probability', 'rate')) {
   # assign type and return
   fun <- switch(type,
                 probability = as.probability(fun),
-                rate = as.rate(fun))
+                rate = as.rate(fun),
+                dispersal = as.dispersal(fun))
 
   attr(fun, 'user-defined') <- TRUE
 
@@ -257,7 +262,6 @@ parameters.transfun <- function (x) {
 
 }
 
-
 parametersCheck <- function (param, transfun = NULL) {
 
   # check incoming parameters make sense
@@ -272,4 +276,19 @@ parametersCheck <- function (param, transfun = NULL) {
     stopifnot(length(param) == length(old_param))
   }
 
+}
+
+productExpectation <- function (x, y) {
+  # given two expectations with different structures, combine them correctly
+  if (is.matrix(x) & length(y > 1)) {
+    # matrix/vector, row-wise multiplication
+    ans <- sweep(x, 1, y, '*')
+  } else if (length(x > 1) & is.matrix(y)) {
+    # matrix/vector, row-wise multiplication
+    ans <- sweep(y, 1, x, '*')
+  } else {
+    # in all other cases, multiply elementwise
+    ans <- x * y
+  }
+  return (ans)
 }
