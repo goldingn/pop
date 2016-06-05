@@ -145,5 +145,6 @@ distance(landscape)
 landscape
 landscape[[1]]
 landscape[[1:2]]
+
 }
 
