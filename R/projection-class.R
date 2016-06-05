@@ -51,15 +51,19 @@ projection <- function (dynamic, population, timesteps = 1) {
   # update the dynamic's landscape population with the requested starting population
   population(landscape(dynamic)) <- population
 
+  # get the number of patches
+  n_patches <- nrow(landscape(dynamic))
+
   # set up results matrix
   result <- matrix(NA,
                    nrow = timesteps + 1,
-                   ncol = length(states(dynamic)))
+                   ncol = length(states(dynamic)) * n_patches)
   rownames(result) <- 0:timesteps
-  colnames(result) <- states(dynamic)
+  colnames(result) <- popvecNames(population)
 
   # add population to first row
-  result[1, ] <- as.numeric(population)
+  popvec <- pop2vec(population)
+  result[1, ] <- popvec
 
   # loop through timesteps projecting according to the landscape state
   for(i in seq_len(timesteps)) {
@@ -68,13 +72,13 @@ projection <- function (dynamic, population, timesteps = 1) {
     A <- as.matrix(dynamic)
 
     # project to the next timestep
-    population[1, ] <- (A %*% as.numeric(population))[, 1]
+    popvec <- (A %*% popvec)[, 1]
 
     # update the landscape population
-    population(landscape(dynamic)) <- population
+    population(landscape(dynamic)) <- vec2pop(popvec, population)
 
     # store the result
-    result[i + 1, ] <- as.numeric(population)
+    result[i + 1, ] <- popvec
 
   }
 
@@ -98,46 +102,63 @@ is.pop_projection <- function (x) {
 
 #' @rdname projection
 #' @param \dots further arguments passed to or from other methods.
-#' @param states a character vector naming the states in the \code{dynamic}
-#'   object used to run the simulation that should be plotted. By default all of
-#'   them are.
+#' @param states character vector naming the states in the \code{dynamic} object
+#'   used to run the projection that should be plotted. By default all of them
+#'   are plotted.
+#' @param patches vector of positive integers identifying the patches for which
+#'   to plot the projections. By default only projections for the first patch
+#'   are plotted.
 #' @export
 #' @examples
 #' par(mfrow = c(3, 1))
 #' plot(proj)
-plot.pop_projection <- function (x, states = NULL, ...) {
+plot.pop_projection <- function (x, states = NULL, patches = 1, ...) {
 
   # get states if they aren't specified
   if (is.null(states)) states <- states(x$dynamic)
 
   # check they're sane
+  n_states <- length(states(x$dynamic))
+  n_patches <- nrow(landscape(x$dynamic))
   stopifnot(states %in% states(x$dynamic))
+  stopifnot(all(patches %in% seq_len(n_patches)))
 
   # plot them one at a time
-  for (state in states) {
+  for (patch in patches) {
+    for (state in states) {
 
-    state_population <- x$projection[, state]
+      if (n_patches == 1) {
+        title <- state
+      } else {
+        title <- sprintf('%s in patch %i',
+                         state,
+                         patch)
+      }
 
-    # get y axis range
-    ylim = range(state_population, na.rm = TRUE)
+      # get column index & column
+      idx <- (patch - 1) * n_states + match(state, states(x$dynamic))
+      state_population <- x$projection[, idx]
 
-    # get x axis
-    xaxs <- as.numeric(rownames(x$projection))
+      # get y axis range
+      ylim = range(state_population, na.rm = TRUE)
 
-    # set up an empty plot
-    plot(state_population ~ xaxs,
-         type = 'n',
-         ylim = ylim,
-         ylab = 'population',
-         xlab = 'time',
-         main = state)
+      # get x axis
+      xaxs <- as.numeric(rownames(x$projection))
 
-    lines(state_population ~ xaxs,
-          lwd = 2,
-          col = grey(0.4))
+      # set up an empty plot
+      plot(state_population ~ xaxs,
+           type = 'n',
+           ylim = ylim,
+           ylab = 'population',
+           xlab = 'time',
+           main = title)
 
+      lines(state_population ~ xaxs,
+            lwd = 2,
+            col = grey(0.4))
+
+    }
   }
-
   # name and return result
   return (invisible(x$projection))
 
@@ -148,4 +169,38 @@ as.pop_projection <- function (x) {
     class(x) <- c('pop_projection', class(x))
   }
   return (x)
+}
+
+# functions to flatten and unflatten population
+pop2vec <- function (population) {
+  # convert a population dataframe into a vector for deterministic analysis
+  ans <- as.vector(t(as.matrix(population)))
+  return (ans)
+}
+
+popvecNames <- function (population) {
+  # get appropriate names for flattened version of population dataframe
+  states <- colnames(population)
+  patches <- as.character(seq_len(nrow(population)))
+  if (length(patches) == 1) {
+    # if only one patch, don't pollute the names
+    names <- states
+  } else {
+    names <- apply(expand.grid(states, patches),
+                   1,
+                   paste,
+                   sep = '',
+                   collapse = '_patch_')
+  }
+  return (names)
+}
+
+vec2pop <- function (vector, population) {
+  n_state <- ncol(population)
+  n_patch <- nrow(population)
+  population[] <- matrix(vector,
+                         nrow = n_patch,
+                         ncol = n_state,
+                         byrow = TRUE)
+  return (population)
 }

@@ -214,6 +214,8 @@ distance <- function (landscape) {
 }
 
 #' @rdname landscape
+#' @param i index specifying the patches to include in the subset
+#'   \code{landscape} object
 #' @export
 #' @examples
 #' # landscapes can be subsetted to get sub-landscapes of patches with double
@@ -228,7 +230,7 @@ distance <- function (landscape) {
   d <- attrib$distance[i, i, drop = FALSE]
   rownames(d) <- colnames(d) <- seq_along(i)
   attrib$distance <- d
-  x <- pop:::squashLandscape(x)
+  x <- squashLandscape(x)
   x <- x[i, ]
   attributes(x) <- attrib
   return (x)

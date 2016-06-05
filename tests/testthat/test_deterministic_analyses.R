@@ -1,4 +1,4 @@
-context('determininstic-analysis')
+context('deterministic-analysis')
 
 test_that('deterministic analyses work', {
 
@@ -111,5 +111,50 @@ test_that('deterministic analyses work', {
   # error on bad states
   expect_error(plot(proj, state = 'bee'))
   expect_error(plot(proj, state = NA))
+
+  # ~~~~~~~~~~
+  # test multi-patch models run and can be analysed in the same way
+
+  # pick a dynamic and give it lots of patches
+  ls <- landscape(all)
+  n <- 10
+  ls_new <- as.landscape(list(coordinates = data.frame(x = runif(n),
+                                                       y = runif(n)),
+                              area = area(ls),
+                              population = population(ls),
+                              features = features(ls)))
+  landscape(all) <- ls_new
+
+  # try to do projection
+  proj <- projection(dynamic = all,
+                     population = population,
+                     timesteps = 10)
+
+  # check it has the right class and structure
+  expect_s3_class(proj, 'pop_projection')
+  expect_s3_class(proj$dynamic, 'dynamic')
+  expect_true(is.matrix(proj$projection))
+
+  # 30 replicates of 101 timepoints
+  expect_equal(dim(proj$projection), c(11, 30))
+
+  # check there are no NAs in there
+  expect_false(anyNA(proj$projection))
+
+  # plotting with specific states/patches
+  proj_plot1 <- plot(proj)
+  proj_plot2 <- plot(proj, states = 'eggs')
+  proj_plot3 <- plot(proj, patches = 2)
+  proj_plot4 <- plot(proj, states = 'larvae', patches = 2)
+
+  # should be the same
+  expect_equal(proj_plot1, proj_plot2)
+  expect_equal(proj_plot1, proj_plot3)
+  expect_equal(proj_plot1, proj_plot4)
+
+  expect_error(plot(proj, states = 'larvae', patches = 11))
+  expect_error(plot(proj, states = 'larvae', patches = -1))
+  expect_error(plot(proj, states = 'bees', patches = 11))
+  expect_error(plot(proj, states = 'bees', patches = -1))
 
 })

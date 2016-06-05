@@ -61,6 +61,9 @@ though more approaches will be added in the future}
 
 \item{landscape}{an object of class \code{landscape}}
 
+\item{i}{index specifying the patches to include in the subset
+\code{landscape} object}
+
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \value{
