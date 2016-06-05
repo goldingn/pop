@@ -218,13 +218,6 @@ coordinates <- function (landscape) {
   return (ans)
 }
 
-`coordinates<-` <- function (landscape, value) {
-  stopifnot(is.landscape(landscape))
-  stopifnot(all.equal(names(coordinates(landscape)), names(value)))
-  landscape[, attr(landscape, 'coordinates')] <- value
-  landscape
-}
-
 areaCheck <- function (area) {
   stopifnot(ncol(area) == 1)
   stopifnot(is.numeric(area[, 1]))
