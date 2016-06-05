@@ -55,7 +55,7 @@ projection <- function (dynamic, population, timesteps = 1) {
   n_patches <- nrow(landscape(dynamic))
 
   # set up results matrix
-  result <- matrix(NA,
+  result <- matrix(0,
                    nrow = timesteps + 1,
                    ncol = length(states(dynamic)) * n_patches)
   rownames(result) <- 0:timesteps

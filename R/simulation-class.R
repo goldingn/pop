@@ -125,11 +125,14 @@ is.simulation <- function (x) {
 #' @param states a character vector naming the states in the \code{dynamic}
 #'   object used to run the simulation that should be plotted. By default all of
 #'   them are.
+#' @param patches vector of positive integers identifying the patches for which
+#'   to plot the simulations. By default only projections for the first patch
+#'   are plotted.
 #' @export
 #' @examples
 #' par(mfrow = c(3, 1))
 #' plot(sim)
-plot.simulation <- function (x, states = NULL, ...) {
+plot.simulation <- function (x, states = NULL, patches = 1, ...) {
   # plot a pop simulation
   # state gives the name of the state to plot (by default all of them, in separate plots)
 
@@ -137,60 +140,76 @@ plot.simulation <- function (x, states = NULL, ...) {
   if (is.null(states)) states <- states(x$dynamic)
 
   # check they're sane
+  n_states <- length(states(x$dynamic))
+  n_patches <- nrow(landscape(x$dynamic))
   stopifnot(states %in% states(x$dynamic))
+  stopifnot(all(patches %in% seq_len(n_patches)))
 
   # object to store the results in
   result <- list()
 
   # plot them one at a time
-  for (state in states) {
+  for (patch in patches) {
+    for (state in states) {
 
-    # extract the simulations for this state
-    sims <- lapply(x$simulations,
-                   function(x) x[, state])
+      if (n_patches == 1) {
+        title <- state
+      } else {
+        title <- sprintf('%s in patch %i',
+                         state,
+                         patch)
+      }
 
-    # if there are replicates, get CIs and medians of counts for each timepoint
-    if (length(sims) > 1) {
-      sims_mat <- do.call(cbind, sims)
-      quants <- t(apply(sims_mat, 1, quantile, c(0.025, 0.5, 0.975)))
-    } else {
-      quants <- cbind(rep(NA, length(sims[[1]])),
-                      sims[[1]],
-                      rep(NA, length(sims[[1]])))
+      # get column index & column
+      idx <- (patch - 1) * n_states + match(state, states(x$dynamic))
+
+      # extract the simulations for this state
+      sims <- lapply(x$simulations,
+                     function(x) x[, idx])
+
+      # if there are replicates, get CIs and medians of counts for each timepoint
+      if (length(sims) > 1) {
+        sims_mat <- do.call(cbind, sims)
+        quants <- t(apply(sims_mat, 1, quantile, c(0.025, 0.5, 0.975)))
+      } else {
+        quants <- cbind(rep(NA, length(sims[[1]])),
+                        sims[[1]],
+                        rep(NA, length(sims[[1]])))
+      }
+
+      colnames(quants) <- c('lower_95_CI',
+                            'median',
+                            'upper_95_CI')
+
+      rownames(quants) <- names(sims[[1]])
+
+      # get y axis range
+      ylim = range(quants, na.rm = TRUE)
+
+      # get x axis
+      xaxs <- as.numeric(names(sims[[1]]))
+
+      # set up an empty plot
+      plot(sims[[1]] ~ xaxs,
+           type = 'n',
+           ylim = ylim,
+           ylab = 'population',
+           xlab = 'time',
+           main = title)
+
+      # draw the 95% CI polygon (if available) and median line
+      polygon(x = c(xaxs, rev(xaxs)),
+              y = c(quants[, 1], rev(quants[, 3])),
+              col = grey(0.9),
+              border = NA)
+
+      lines(quants[, 2] ~ xaxs,
+            lwd = 2,
+            col = grey(0.4))
+
+      result[[title]] <- quants
+
     }
-
-    colnames(quants) <- c('lower_95_CI',
-                          'median',
-                          'upper_95_CI')
-
-    rownames(quants) <- names(sims[[1]])
-
-    # get y axis range
-    ylim = range(quants, na.rm = TRUE)
-
-    # get x axis
-    xaxs <- as.numeric(names(sims[[1]]))
-
-    # set up an empty plot
-    plot(sims[[1]] ~ xaxs,
-         type = 'n',
-         ylim = ylim,
-         ylab = 'population',
-         xlab = 'time',
-         main = state)
-
-    # draw the 95% CI polygon (if available) and median line
-    polygon(x = c(xaxs, rev(xaxs)),
-            y = c(quants[, 1], rev(quants[, 3])),
-            col = grey(0.9),
-            border = NA)
-
-    lines(quants[, 2] ~ xaxs,
-          lwd = 2,
-          col = grey(0.4))
-
-    result[[state]] <- quants
-
   }
 
   # name and return result
@@ -299,13 +318,21 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
   # internal function to run simulations. First element is a dummy for use
   # with (par)lapply.
 
-  # set up matrix to store results
+  # get the numbers of states and patches
+  n_states <- length(states(dynamic))
+  n_patches <- nrow(landscape(dynamic))
+
+  # set up results matrix
   res <- matrix(0,
                 nrow = timesteps + 1,
-                ncol = ncol(population))
-  res[1, ] <- as.numeric(population)
+                ncol = n_states * n_patches)
   rownames(res) <- 0:timesteps
-  colnames(res) <- names(population)
+  colnames(res) <- popvecNames(population)
+
+  # add population to first row
+  popvec <- pop2vec(population)
+  res[1, ] <- popvec
+
 
   for (time in seq_len(timesteps)) {
 
@@ -316,7 +343,7 @@ popSimulate <- function (iter, dynamic, population, timesteps) {
     population(landscape(dynamic)) <- population
 
     # store the result & call it quits if they're all gone
-    res[time + 1, ] <- as.numeric(population)
+    res[time + 1, ] <- pop2vec(population)
     if (all(population == 0)) break()
 
   }
