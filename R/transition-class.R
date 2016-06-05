@@ -69,10 +69,11 @@ print.transition <- function (x, ...) {
                     x$to)
 
   } else {
+    landscape <- as.landscape(NULL)
     text <- sprintf('transition:\t%s -> %s with expectation %s\n',
                     x$from,
                     x$to,
-                    expected(x$transfun))
+                    x$transfun(landscape))
   }
   cat(text)
 }

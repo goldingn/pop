@@ -277,16 +277,17 @@ stoch <- function (transfun, N, landscape) {
   if (type == 'compound') {
 
     # if it's a compound transfun, call stoch recursively on each component
-    components <- transfun()
-    N <- stoch(components[[1]], N, landscape)
-    N <- stoch(components[[2]], N, landscape)
+    tf_x <- environment(transfun)$x
+    tf_y <- environment(transfun)$y
+    N <- stoch(tf_x, N, landscape)
+    N <- stoch(tf_y, N, landscape)
 
   } else {
 
     # otherwise execute the transition
     N <- switch(type,
-                probability = stoch_prob(expected(transfun, landscape), N),
-                rate = stoch_rate(expected(transfun, landscape), N))
+                probability = stoch_prob(transfun(landscape), N),
+                rate = stoch_rate(transfun(landscape), N))
 
   }
 
