@@ -59,13 +59,13 @@ test_that('transfun classes work', {
   expect_equal(capture.output(print(rate)),
                'rate transfun with expectation 3')
   expect_equal(capture.output(print(disp)),
-               'dispersal transfun with expectation 0')
+               'dispersal transfun with expectation 1')
   expect_equal(capture.output(print(dd)),
                'user-specified probability transfun')
   expect_equal(capture.output(print(compound)),
                'compound transfun with expectation 1.5')
   expect_equal(capture.output(print(compound_disp)),
-               'compound transfun with expectation 0')
+               'compound transfun with expectation 0.5')
   expect_equal(capture.output(print(compound_user)),
                'user-specified compound transfun')
 

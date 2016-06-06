@@ -25,7 +25,6 @@ dispersal <- function (value) {
   param = list(l = value)
   f <- function (landscape) {
     ans <- exp(param$l * -distance(landscape))
-    diag(ans) <- 0
     return (ans)
   }
   f <- as.dispersal(f)

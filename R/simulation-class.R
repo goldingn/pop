@@ -237,7 +237,7 @@ update <- function (population, dynamic) {
     if (trans$to == trans$from) {
       # if it's to the same state...
 
-      if (containsRate(trans$transfun)) {
+      if (contains(trans$transfun, 'rate')) {
 
         # if it's a rate (recruitment) add to new population
         new_population[, trans$to] <- new_population[, trans$to] + N_new
@@ -253,7 +253,7 @@ update <- function (population, dynamic) {
     } else {
       # if it's to another state
 
-      if (containsRate(trans$transfun)) {
+      if (contains(trans$transfun, 'rate')) {
 
         # if it was a recruitment event add to the state in the new population
         new_population[, trans$to] <- new_population[, trans$to] + N_new

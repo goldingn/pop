@@ -189,4 +189,47 @@ test_that('dynamic classes work', {
   expect_true(is.matrix(mat))
   expect_equal(dim(mat), rep(n * 3, 2))
 
+  # add dispersal into the dynamic
+  adult_dispersal <- tr(adult ~ adult, p(0.5) * d(3))
+  all_disp <- dynamic(all,
+                      adult_dispersal)
+  landscape(all_disp) <- ls_new
+
+
+  # check plotting
+  plot_all_disp <- plot(all_disp)
+
+  # convert to matrices
+  mat_disp <- as.matrix(all_disp)
+  matA_disp <- as.matrix(all_disp, which = 'A')
+  matP_disp <- as.matrix(all_disp, which = 'P')
+  matF_disp <- as.matrix(all_disp, which = 'F')
+  matR_disp <- as.matrix(all_disp, which = 'R')
+
+  # check classes
+  expect_s3_class(mat_disp, c('matrix', 'transition_matrix'))
+  expect_s3_class(matA_disp, c('matrix', 'transition_matrix'))
+  expect_s3_class(matP_disp, c('matrix', 'transition_matrix'))
+  expect_s3_class(matF_disp, c('matrix', 'transition_matrix'))
+  expect_s3_class(matR_disp, c('matrix', 'transition_matrix'))
+
+  # check dimensions are correct
+  expect_equal(dim(mat_disp), c(30, 30))
+  expect_equal(dim(matA_disp), c(30, 30))
+  expect_equal(dim(matP_disp), c(30, 30))
+  expect_equal(dim(matF_disp), c(30, 30))
+  expect_equal(dim(matR_disp), c(30, 30))
+
+  # check there are/aren't 0s where there should/shouldn't be
+  idx <- seq(0, 30, by = 3)[-1]
+  cells <- as.matrix(expand.grid(idx, idx))
+  expect_true(all(matA_disp[cells] > 0))
+  expect_true(all(matP_disp[cells] > 0))
+  expect_true(all(matF_disp[cells] == 0))
+
+  # # make sure projection works for dispersals
+  # proj <- projection(all_disp,
+  #                    population = c(egg = 500, larva = 200, adult = 500),
+  #                    timesteps = 100)
+
 })
