@@ -125,7 +125,12 @@ test_that('deterministic analyses work', {
                               features = features(ls)))
   landscape(all) <- ls_new
 
-  # try to do projection
+  # add dispersal into the dynamic
+  adult_dispersal <- tr(adults ~ adults, p(0.5) * d(3))
+  all <- dynamic(all, adult_dispersal)
+  landscape(all) <- ls_new
+
+  # do projection
   proj <- projection(dynamic = all,
                      population = population,
                      timesteps = 10)
