@@ -9,9 +9,12 @@
 #' @param value the (positive) exponential rate of decay of dispersal
 #'   probabilities. Large values imply shorter range dispersal.
 #' @details \code{d()} is a shorthand for \code{dispersal()}. The
-#'   \code{transfun} object returned, when applplied to a \code{landscape}
-#'   object, produces a square symmetric matrix, with zero diagonal and
-#'   off-diagonals giving the relative between patch dispersal probability.
+#'   \code{transfun} object returned, when applied to a \code{landscape} object,
+#'   produces a square symmetric matrix, with zero diagonal and off-diagonals
+#'   giving the relative between patch dispersal probability. This implies that
+#'   \emph{all} individuals in the state will disperse. To have only some
+#'   fraction disperse, a dispersal transfun can be multiplied by a probability
+#'   transfun indicating the probability of dispersal.
 #' @export
 #' @examples
 #' # these are equivalent
@@ -24,7 +27,15 @@ dispersal <- function (value) {
   stopifnot(value >= 0)
   param = list(l = value)
   f <- function (landscape) {
-    ans <- exp(param$l * -distance(landscape))
+    dis <- distance(landscape)
+    # account for single patchdispersal being 0
+    if (nrow(dis) == 1) {
+      ans <- dis * 0
+    } else {
+      ans <- exp(param$l * -dis)
+      diag(ans) <- 0
+      ans <- sweep(ans, 1, rowSums(ans), '/')
+    }
     return (ans)
   }
   f <- as.dispersal(f)

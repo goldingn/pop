@@ -25,9 +25,12 @@ Create a transfun object representing a relative probability of
 }
 \details{
 \code{d()} is a shorthand for \code{dispersal()}. The
-  \code{transfun} object returned, when applplied to a \code{landscape}
-  object, produces a square symmetric matrix, with zero diagonal and
-  off-diagonals giving the relative between patch dispersal probability.
+  \code{transfun} object returned, when applied to a \code{landscape} object,
+  produces a square symmetric matrix, with zero diagonal and off-diagonals
+  giving the relative between patch dispersal probability. This implies that
+  \emph{all} individuals in the state will disperse. To have only some
+  fraction disperse, a dispersal transfun can be multiplied by a probability
+  transfun indicating the probability of dispersal.
 }
 \examples{
 # these are equivalent

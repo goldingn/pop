@@ -79,11 +79,43 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function (landscape) {
-    productExpectation(x(landscape), y(landscape))
+
+  if ((is.dispersal(x) & is.probability(y)) |
+      (is.dispersal(y) & is.probability(x))) {
+
+    # if its a dispersal and probability
+    z <- function (landscape) {
+      probdisp(x, y, landscape)
+    }
+
+  } else if ((is.dispersal(x) & is.rate(y)) |
+        (is.dispersal(y) & is.rate(x))) {
+
+    # if its a dispersal and rate
+    z <- function (landscape) {
+      ratedisp(x, y, landscape)
+    }
+
+  } else if (is.dispersal(x) & is.dispersal(y)) {
+
+    # if they're both dispersals
+    z <- function (landscape) {
+      dispdisp(x, y, landscape)
+    }
+
+  } else {
+
+    # if none are dispersals, just the product
+    z <- function (landscape) {
+      x(landscape) * y(landscape)
+    }
+
   }
+
+  # coerce class & return
   z <- as.compound(z)
   return (z)
+
 }
 
 #' @title create a transition function
@@ -278,17 +310,79 @@ parametersCheck <- function (param, transfun = NULL) {
 
 }
 
-productExpectation <- function (x, y) {
-  # given two expectations with different structures, combine them correctly
-  if (is.matrix(x) & length(y > 1)) {
-    # matrix/vector, row-wise multiplication
-    ans <- sweep(x, 1, y, '*')
-  } else if (length(x > 1) & is.matrix(y)) {
-    # matrix/vector, row-wise multiplication
-    ans <- sweep(y, 1, x, '*')
+probdisp <- function (x, y, landscape) {
+  # get expected dispersal fraction from a probability and a dispersal transfun.
+  # dispersal should have diagonal giving probability of staying, off-diagonals
+  # giving probability of moving to each other patch, w/ all rows summing to 1.
+  # probability is probability of leaving (1-probability of staying).
+
+  # work out which way round
+  if (is.probability(x) & is.dispersal(y)) {
+    prob <- x(landscape)
+    disp <- y(landscape)
   } else {
-    # in all other cases, multiply elementwise
-    ans <- x * y
+    prob <- y(landscape)
+    disp <- x(landscape)
   }
+
+  # get new diagonals
+  new_diag <- (1 - prob) * (1 - diag(disp))
+
+  # get dummy off-diagonal matrix
+  ans <- disp
+  diag(ans) <- 0
+
+  # make these sum to prob
+  ans <- sweep(ans, 1, prob * rowSums(ans), '*')
+
+  # add diagonal back in & return
+  diag(ans) <- new_diag
   return (ans)
+
+}
+
+ratedisp <- function (x, y, landscape) {
+  # get expected dispersal fraction from a rate and a dispersal transfun.
+  # dispersal should have diagonal giving probability of staying, off-diagonals
+  # giving probability of moving to each other patch, w/ all rows summing to 1.
+  # rate is number of offspring per origin individual
+
+  # work out which way round
+  if (is.rate(x) & is.dispersal(y)) {
+    rate <- x(landscape)
+    disp <- y(landscape)
+  } else {
+    rate <- y(landscape)
+    disp <- x(landscape)
+  }
+
+  # multiply through & return
+  disp <- sweep(disp, 1, rate, '*')
+  return (disp)
+
+}
+
+dispdisp <- function (x, y, landscape) {
+  # get expected dispersal matrix from two dispersal transfuns.
+  # dispersal should have diagonal giving probability of staying, off-diagonals
+  # giving probability of moving to each other patch, w/ all rows summing to 1.
+
+  disp1 <- x(landscape)
+  disp2 <- y(landscape)
+
+  # get new diagonal * reciprocal
+  prob_stay <- (1 - diag(disp1)) * (1 - diag(disp2))
+  prob_leave <- 1 - prob_stay
+
+  # combine dummy off-diagonal matrices
+  diag(disp1) <- diag(disp2) <- 0
+  ans <- disp1 * disp2
+
+  # make these sum to prob_leave
+  ans <- sweep(ans, 1, prob_leave * rowSums(ans), '*')
+
+  # add diagonal back in & return
+  diag(ans) <- prob_stay
+  return (ans)
+
 }
