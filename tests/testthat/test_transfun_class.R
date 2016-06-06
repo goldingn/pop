@@ -102,4 +102,8 @@ test_that('transfun classes work', {
   expect_true(all((abs(rowSums(p_disp1_mat) - 1)) < eps))
   expect_true(all((abs(rowSums(p_disp2_mat) - 1)) < eps))
 
+  # check that it errors when doing illegal things with dispersal transfuns
+  expect_error(r(3) * disp)
+  expect_error(tr(bee ~ bull, disp))
+
 })
