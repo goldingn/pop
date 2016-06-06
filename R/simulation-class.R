@@ -244,14 +244,14 @@ update <- function (population, dynamic) {
 
       } else {
 
-        # if it's a (survival) probability (not recruitment), replace *old*
-        # population with the new one
+        # if it's a (survival) probability (not recruitment), or dispersal to
+        # same state, replace *old* population with the new one
         population[, trans$to] <- N_new
 
       }
 
     } else {
-      # if it's to another state
+      # if it's to another state (can't be a dispersal)
 
       if (contains(trans$transfun, 'rate')) {
 
@@ -286,7 +286,12 @@ stoch_rate <- function (expectation, N) {
   rpois(n = length(N), lambda = N * expectation)
 }
 stoch_disp <- function (expectation, N) {
-  rdisp(N, expectation)
+  # random multinomial draws on a square matrix
+  disp <- N * 0
+  for (i in seq_along(N)) {
+    disp <- disp + rmultinom(1, N[i], expectation[i, ])
+  }
+  return (disp[, 1])
 }
 
 stoch <- function (transfun, N, landscape) {
@@ -296,9 +301,15 @@ stoch <- function (transfun, N, landscape) {
   # get type
   type <- transfunType(transfun)
 
-  if (type == 'compound') {
+  # if it's a dispersal
+  if (contains(transfun, 'dispersal')) {
 
-    # if it's a compound transfun, call stoch recursively on each component
+    # randomly them move across the landscape
+    N <- stoch_disp(transfun(landscape), N)
+
+  } else if (type == 'compound') {
+
+    # if it's a (non-dispersal) compound transfun, call stoch recursively on each component
     tf_x <- environment(transfun)$x
     tf_y <- environment(transfun)$y
     N <- stoch(tf_x, N, landscape)
@@ -306,11 +317,10 @@ stoch <- function (transfun, N, landscape) {
 
   } else {
 
-    # otherwise execute the transition
-    N <- switch(type,
-                probability = stoch_prob(transfun(landscape), N),
-                rate = stoch_rate(transfun(landscape), N),
-                dispersal = stoch_disp(transfun(landscape), N))
+    # otherwise execute the basis transition on its own
+    N <- switch (type,
+                 probability = stoch_prob(transfun(landscape), N),
+                 rate = stoch_rate(transfun(landscape), N))
 
   }
 
@@ -362,13 +372,3 @@ as.simulation <- function (x) {
   }
   return (x)
 }
-
-rdisp <- function(N, p) {
-  # random multinomial draws on a square matrix
-  disp <- N * 0
-  for (i in seq_along(N)) {
-    disp <- disp + rmultinom(1, N[i], p[i, ])
-  }
-  return (disp[, 1])
-}
-

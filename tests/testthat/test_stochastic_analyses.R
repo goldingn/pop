@@ -184,12 +184,16 @@ test_that('stochastic analyses work', {
                               area = area(ls),
                               population = population(ls),
                               features = features(ls)))
+
+  # add dispersal into the dynamic
+  adult_dispersal <- tr(adults ~ adults, p(0.5) * d(3))
+  all <- dynamic(all, adult_dispersal)
   landscape(all) <- ls_new
 
   # try to do simulation
   sim <- simulation(dynamic = all,
                     population = population,
-                    timesteps = 50,
+                    timesteps = 10,
                     replicates = 3,
                     ncores = 1)
 
@@ -201,7 +205,7 @@ test_that('stochastic analyses work', {
   # 3 replicates of 11 snapshots
   expect_equal(length(sim$simulations), 3)
   maxt <- sapply(sim$simulations, nrow)
-  expect_true(all(maxt == 51))
+  expect_true(all(maxt == 11))
 
   # check there are no NAs in there
   NAs <- sapply(sim$simulations, anyNA)

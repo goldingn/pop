@@ -29,6 +29,11 @@ transition <- function (formula, transfun) {
   to <- as.character(formula[[2]])
   from <- as.character(formula[[3]])
 
+  # stop any cross-state dispersals
+  if (to != from & contains(transfun, 'dispersal')) {
+    stop ('dispersals can only occur between patches, within the same state')
+  }
+
   object <- list(to = to,
                  from = from,
                  transfun = transfun)
