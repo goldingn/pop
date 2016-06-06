@@ -12,9 +12,14 @@
 #'   \code{transfun} object returned, when applied to a \code{landscape} object,
 #'   produces a square symmetric matrix, with zero diagonal and off-diagonals
 #'   giving the relative between patch dispersal probability. This implies that
-#'   \emph{all} individuals in the state will disperse. To have only some
-#'   fraction disperse, a dispersal transfun can be multiplied by a probability
-#'   transfun indicating the probability of dispersal.
+#'   \emph{all} individuals in the state will \emph{try} to disperse. The
+#'   fraction remaining in the patch depends on \code{value}. To have only some
+#'   fraction try to disperse, a dispersal transfun can be multiplied by a
+#'   probability transfun indicating the probability of attempting dispersal.
+#'
+#'   The relative dispersal probability is given by \code{exp(-d * value)},
+#'   where \code{d} is the Euclidean distance between the origin and
+#'   destination patch.
 #' @export
 #' @examples
 #' # these are equivalent
@@ -27,13 +32,8 @@ dispersal <- function (value) {
   stopifnot(value >= 0)
   param = list(l = value)
   f <- function (landscape) {
-    dis <- distance(landscape)
-    # account for single patchdispersal being 0
-    if (nrow(dis) == 1) {
-      ans <- dis * 0
-    } else {
-      ans <- exp(param$l * -dis)
-      diag(ans) <- 0
+    ans <- exp(param$l * -distance(landscape))
+    if (nrow(ans) > 1) {
       ans <- sweep(ans, 1, rowSums(ans), '/')
     }
     return (ans)

@@ -59,13 +59,13 @@ test_that('transfun classes work', {
   expect_equal(capture.output(print(rate)),
                'rate transfun with expectation 3')
   expect_equal(capture.output(print(disp)),
-               'dispersal transfun with expectation 0')
+               'dispersal transfun with expectation 1')
   expect_equal(capture.output(print(dd)),
                'user-specified probability transfun')
   expect_equal(capture.output(print(compound)),
                'compound transfun with expectation 1.5')
   expect_equal(capture.output(print(compound_disp)),
-               'compound transfun with expectation 0.5')
+               'compound transfun with expectation 1')
   expect_equal(capture.output(print(compound_user)),
                'user-specified compound transfun')
 
@@ -98,13 +98,8 @@ test_that('transfun classes work', {
 
   # check rowSums are (nearly) all 1, or the rate
   eps <- sqrt(.Machine$double.eps)
-  expect_true(all((rowSums(disp_mat) - 1) < eps))
-  expect_true(all((rowSums(p_disp1_mat) - 1) < eps))
-  expect_true(all((rowSums(p_disp2_mat) - 1) < eps))
-
-  # self matrices should be prob_staying for probability compound, 0 otherwise
-  expect_true(all(diag(disp_mat) == 0))
-  expect_true(all(diag(p_disp1_mat) == 0.5))
-  expect_true(all(diag(p_disp2_mat) == 0.8))
+  expect_true(all((abs(rowSums(disp_mat) - 1)) < eps))
+  expect_true(all((abs(rowSums(p_disp1_mat) - 1)) < eps))
+  expect_true(all((abs(rowSums(p_disp2_mat) - 1)) < eps))
 
 })

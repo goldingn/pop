@@ -314,19 +314,13 @@ probdisp <- function (x, y, landscape) {
     disp <- x(landscape)
   }
 
-  # get new diagonals
-  new_diag <- (1 - prob) * (1 - diag(disp))
+  # multiply each row by the dispersal probability
+  disp <- sweep(disp, 1, prob, '*')
 
-  # get dummy off-diagonal matrix
-  ans <- disp
-  diag(ans) <- 0
+  # add fraction not attempting dispersal back onto diagonal
+  diag(disp) <- diag(disp) + 1 - prob
 
-  # make these sum to prob
-  ans <- sweep(ans, 1, prob * rowSums(ans), '*')
-
-  # add diagonal back in & return
-  diag(ans) <- new_diag
-  return (ans)
+  return (disp)
 
 }
 
