@@ -265,4 +265,4 @@ plot(sim_dd_metapop2, 'adults', patches = 1:3)
 
 ![](readme_files/figure-markdown_github/simulate_metapop2-1.png)<!-- -->
 
-As before, we can also project this metapopulation deterministically, and extrat transition matrices to use in other software.
+As before, we can also project this metapopulation deterministically, and extract transition matrices to use in other software.
