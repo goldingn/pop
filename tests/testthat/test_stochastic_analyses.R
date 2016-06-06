@@ -172,4 +172,58 @@ test_that('stochastic analyses work', {
   expect_error(plot(sim1, state = 'bee'))
   expect_error(plot(sim1, state = NA))
 
+
+  # ~~~~~~~~~~
+  # test multi-patch models run and can be analysed in the same way
+
+  # pick a dynamic and give it lots of patches
+  ls <- landscape(all)
+  n <- 10
+  ls_new <- as.landscape(list(coordinates = data.frame(x = runif(n),
+                                                       y = runif(n)),
+                              area = area(ls),
+                              population = population(ls),
+                              features = features(ls)))
+
+  # add dispersal into the dynamic
+  adult_dispersal <- tr(adults ~ adults, p(0.5) * d(3))
+  all <- dynamic(all, adult_dispersal)
+  landscape(all) <- ls_new
+
+  # try to do simulation
+  sim <- simulation(dynamic = all,
+                    population = population,
+                    timesteps = 10,
+                    replicates = 3,
+                    ncores = 1)
+
+  # check it has the right class and structure
+  expect_s3_class(sim, 'simulation')
+  expect_s3_class(sim$dynamic, 'dynamic')
+  expect_true(is.list(sim$simulations))
+
+  # 3 replicates of 11 snapshots
+  expect_equal(length(sim$simulations), 3)
+  maxt <- sapply(sim$simulations, nrow)
+  expect_true(all(maxt == 11))
+
+  # check there are no NAs in there
+  NAs <- sapply(sim$simulations, anyNA)
+  expect_false(any(NAs))
+
+  # each should have the right number of states
+  cols <- sapply(sim$simulations, ncol)
+  expect_true(all(cols == length(states(all)) * nrow(landscape(all))))
+
+  # plotting with specific states/patches
+  sim_plot1 <- plot(sim)
+  sim_plot2 <- plot(sim, states = 'eggs')
+  sim_plot3 <- plot(sim, patches = 2)
+  sim_plot4 <- plot(sim, states = 'larvae', patches = 2)
+
+  expect_error(plot(sim, states = 'larvae', patches = 11))
+  expect_error(plot(sim, states = 'larvae', patches = -1))
+  expect_error(plot(sim, states = 'bees', patches = 11))
+  expect_error(plot(sim, states = 'bees', patches = -1))
+
 })

@@ -13,6 +13,5 @@
 #' @import igraph
 #' @importFrom graphics lines plot polygon
 #' @importFrom grDevices grey
-#' @importFrom stats dist na.omit quantile rbinom rpois
-
+#' @importFrom stats dist na.omit quantile rbinom rpois rmultinom
 NULL

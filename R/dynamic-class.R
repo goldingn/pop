@@ -144,17 +144,73 @@ print.dynamic <- function (x, ...) {
 #' as.matrix(all)
 as.matrix.dynamic <- function (x, which = c('A', 'P', 'F', 'R'), ...) {
 
-  user_defined <- sapply(x,
-                         function (z) containsUserTransfun(z$transfun))
-
   # build the overall, reproduction (R), progression (P) of fecundity (F) matrix
   which <- match.arg(which)
 
-  mat <- switch(which,
-                `A` = getA(x),
-                `P` = getP(x),
-                `F` = getF(x),
-                `R` = getR(x))
+  # find the numbers of patches and states
+  n_patches <- nrow(landscape(x))
+  n_states <-  length(states(x))
+  n_cells <- n_patches * n_states
+
+  # split the dynamic into demographic and dispersal components
+  is_disp <- sapply(x, function (x) contains(x$transfun, 'dispersal'))
+  x_disp <- subDynamic(x, which(is_disp))
+  x_demog <- subDynamic(x, which(!is_disp))
+
+  if (n_patches > 1) {
+
+    # if there are multiple patches, set up metamatrix
+    mat <- matrix(0, n_cells, n_cells)
+
+    # loop through them patches getting the demographic components
+    for (patch in seq_len(n_patches)) {
+      # remove dispersals
+      sub_dynamic <- x_demog
+      landscape(sub_dynamic) <- landscape(x_disp)[[patch]]
+      sub_mat <- as.matrix(sub_dynamic, which = which, ...)
+      idx <- (patch - 1) * n_states + seq_len(n_states)
+      mat[idx, idx] <- sub_mat
+    }
+
+    # for all except fecundity
+    if (which != 'F') {
+
+      # get the dispersal probabilities and add to matrix in correct places
+      for (trans in x_disp) {
+
+        # find indices in meta matrix
+        from_state <- match(trans$from, states(x))
+        to_state <- match(trans$to, states(x))
+        from_idx <- from_state + (seq_len(n_patches) - 1) * n_states
+        to_idx <- to_state + (seq_len(n_patches) - 1) * n_states
+        cells <- as.matrix(expand.grid(to_idx, from_idx))
+
+        # get expectation of dispersal
+        disp <- trans$transfun(landscape(x))
+
+        # make it sum to 1, row-wise
+        disp <- sweep(disp, 1, rowSums(disp), '/')
+
+        # apply diagonal transitions (some fraction staying in state)
+        disp <- sweep(disp, 1, diag(mat)[from_idx], '*')
+
+        # insert into meta matrix
+        mat[cells] <- as.numeric(disp)
+
+      }
+
+    }
+
+  } else {
+
+    # if only one patch, just get the demographic component
+    mat <- switch(which,
+                  `A` = getA(x_demog),
+                  `P` = getP(x_demog),
+                  `F` = getF(x_demog),
+                  `R` = getR(x_demog))
+
+  }
 
   # set class and return
   class(mat) <- c(class(mat), 'transition_matrix')
@@ -177,7 +233,7 @@ getA <- function (x) {
     expectation <- t$transfun(landscape)
 
     # if it's a rate (or compound containing a rate)
-    if (containsRate(t$transfun)) {
+    if (contains(t$transfun, 'rate')) {
 
       if (t$to == t$from) {
 
@@ -240,7 +296,7 @@ getF <- function (x) {
   for (t in x) {
 
     # if it's a rate (or compound containing a rate)
-    if (containsRate(t$transfun)) {
+    if (contains(t$transfun, 'rate')) {
 
       # get the expectation and add it in
       expectation <- t$transfun(landscape)
@@ -265,7 +321,7 @@ getP <- function (x) {
   for (t in x) {
 
     # if it's not a rate (nor compound containing a rate)
-    if (!containsRate(t$transfun)) {
+    if (!contains(t$transfun, 'rate')) {
 
       # get the expectation
       expectation <- t$transfun(landscape)
@@ -292,16 +348,17 @@ getP <- function (x) {
 
 }
 
-containsRate <- function (transfun) {
+contains <- function (transfun, which = c('probability', 'rate', 'dispersal')) {
   # check whether a transition contains a rate transition (rather than pure
   # probability)
+  which <- match.arg(which)
   type <- transfunType(transfun)
   if (type == 'compound') {
     # if it's a compound, call recursively to look for any
     tf_x <- environment(transfun)$x
     tf_y <- environment(transfun)$y
-    ans <- containsRate(tf_x) | containsRate(tf_y)
-  } else if (type == 'rate') {
+    ans <- contains(tf_x, which) | contains(tf_y, which)
+  } else if (type == which) {
     ans <- TRUE
   } else {
     ans <- FALSE
@@ -334,7 +391,8 @@ transfun2text <- function (transfun) {
     # make a nice simple text representation
     prefix <- switch(type,
                      probability = 'p',
-                     rate = 'r')
+                     rate = 'r',
+                     dispersal = 'd')
 
     # don't try to find the expectation if it's user-defined
     landscape <- as.landscape(NULL)
@@ -419,4 +477,13 @@ unpackDynamics <- function (object) {
   # return
   return (object)
 
+}
+
+
+subDynamic <- function (x, i) {
+  attrib <- attributes(x)
+  attrib$names <- attrib$names[i]
+  x <- x[i]
+  attributes(x) <- attrib
+  return (x)
 }

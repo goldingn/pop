@@ -106,4 +106,27 @@ test_that('landscape classes work', {
   expect_error(distance(ls_all) <- data.frame(x = 10))
   expect_error(distance(ls_all) <- as.matrix(dist(runif(4))))
 
+  # test subsetting
+  ls <- as.landscape(list(coordinates = data.frame(x = 1:3, y = 1:3),
+                          area = data.frame(area = 1),
+                          population = data.frame(eggs = 1,
+                                                  larvae = 3,
+                                                  adults = 12),
+                          features = data.frame()[1, ]))
+
+  ls_sub <- as.landscape(list(coordinates = data.frame(x = 1:2, y = 1:2),
+                          area = data.frame(area = 1),
+                          population = data.frame(eggs = 1,
+                                                  larvae = 3,
+                                                  adults = 12),
+                          features = data.frame()[1, ]))
+
+  expect_equal(ls[[1:2]], ls_sub)
+  expect_equal(capture.output(print(ls)),
+               'landscape with 3 patches')
+  expect_equal(capture.output(print(ls_sub)),
+               'landscape with 2 patches')
+  expect_equal(distance(ls)[1:2, 1:2],
+               distance(ls_sub))
+
 })

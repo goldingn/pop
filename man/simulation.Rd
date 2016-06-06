@@ -11,7 +11,7 @@ simulation(dynamic, population, timesteps = 1, replicates = 1,
 
 is.simulation(x)
 
-\method{plot}{simulation}(x, states = NULL, ...)
+\method{plot}{simulation}(x, states = NULL, patches = 1, ...)
 }
 \arguments{
 \item{dynamic}{a population dynamic model of class \code{\link{dynamic}}}
@@ -41,6 +41,10 @@ argument is ignored is \code{replicates = 1}}
 \item{states}{a character vector naming the states in the \code{dynamic}
 object used to run the simulation that should be plotted. By default all of
 them are.}
+
+\item{patches}{vector of positive integers identifying the patches for which
+to plot the simulations. By default only projections for the first patch
+are plotted.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

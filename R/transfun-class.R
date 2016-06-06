@@ -2,7 +2,7 @@
 
 transfunClasses <- function () {
   # list all available classes of transfun
-  c('probability', 'rate', 'compound')
+  c('probability', 'rate', 'dispersal', 'compound')
 }
 
 transfunType <- function (x) {
@@ -79,9 +79,32 @@ as.compound <- function (x) {
   # given two transfun objects, combine them into a compound transfun
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
-  z <- function (landscape) x(landscape) * y(landscape)
+
+  # make sure a dispersal is not combined with a rate or another dispersal
+  combineDispersalCheck(x, y)
+
+  # if it contains a dispersal, the other must be only a probability
+  if (contains(x, 'dispersal') |
+      contains(y, 'dispersal')) {
+
+    # if its a dispersal and probability
+    z <- function (landscape) {
+      probdisp(x, y, landscape)
+    }
+
+  } else {
+
+    # if none are dispersals, just the product
+    z <- function (landscape) {
+      x(landscape) * y(landscape)
+    }
+
+  }
+
+  # coerce class & return
   z <- as.compound(z)
   return (z)
+
 }
 
 #' @title create a transition function
@@ -125,7 +148,9 @@ as.compound <- function (x) {
 #'                                     range = 10),
 #'                        type = 'probability')
 #'
-as.transfun <- function (fun, param, type = c('probability', 'rate')) {
+as.transfun <- function (fun,
+                         param,
+                         type = c('probability', 'rate', 'dispersal')) {
 
   # line up the transfun type
   type <- match.arg(type)
@@ -147,7 +172,8 @@ as.transfun <- function (fun, param, type = c('probability', 'rate')) {
   # assign type and return
   fun <- switch(type,
                 probability = as.probability(fun),
-                rate = as.rate(fun))
+                rate = as.rate(fun),
+                dispersal = as.dispersal(fun))
 
   attr(fun, 'user-defined') <- TRUE
 
@@ -257,7 +283,6 @@ parameters.transfun <- function (x) {
 
 }
 
-
 parametersCheck <- function (param, transfun = NULL) {
 
   # check incoming parameters make sense
@@ -272,4 +297,39 @@ parametersCheck <- function (param, transfun = NULL) {
     stopifnot(length(param) == length(old_param))
   }
 
+}
+
+probdisp <- function (x, y, landscape) {
+  # get expected dispersal fraction from a probability and a dispersal transfun.
+  # dispersal should have diagonal giving probability of staying, off-diagonals
+  # giving probability of moving to each other patch, w/ all rows summing to 1.
+  # probability is probability of leaving (1-probability of staying).
+
+  # work out which way round
+  if (is.probability(x) & is.dispersal(y)) {
+    prob <- x(landscape)
+    disp <- y(landscape)
+  } else {
+    prob <- y(landscape)
+    disp <- x(landscape)
+  }
+
+  # multiply each row by the dispersal probability
+  disp <- sweep(disp, 1, prob, '*')
+
+  # add fraction not attempting dispersal back onto diagonal
+  diag(disp) <- diag(disp) + 1 - prob
+
+  return (disp)
+
+}
+
+combineDispersalCheck <- function (x, y) {
+  bad_thing1 <- contains(x, 'dispersal') &
+    (contains(y, 'dispersal') | contains(y, 'rate'))
+  bad_thing2 <- contains(y, 'dispersal') &
+    (contains(x, 'dispersal') | contains(x, 'rate'))
+  if (bad_thing1 | bad_thing2) {
+    stop ('dispersal transfuns can only be combined with probability transfuns')
+  }
 }

@@ -10,7 +10,7 @@ projection(dynamic, population, timesteps = 1)
 
 is.pop_projection(x)
 
-\method{plot}{pop_projection}(x, states = NULL, ...)
+\method{plot}{pop_projection}(x, states = NULL, patches = 1, ...)
 }
 \arguments{
 \item{dynamic}{a population dynamic model of class \code{\link{dynamic}}}
@@ -29,9 +29,13 @@ patches in the landscape.}
 
 \item{x}{a \code{pop_projection} object, or an object to be tested as one}
 
-\item{states}{a character vector naming the states in the \code{dynamic}
-object used to run the simulation that should be plotted. By default all of
-them are.}
+\item{states}{character vector naming the states in the \code{dynamic} object
+used to run the projection that should be plotted. By default all of them
+are plotted.}
+
+\item{patches}{vector of positive integers identifying the patches for which
+to plot the projections. By default only projections for the first patch
+are plotted.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
