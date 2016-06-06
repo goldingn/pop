@@ -371,7 +371,7 @@ dispdisp <- function (x, y, landscape) {
   disp2 <- y(landscape)
 
   # get new diagonal * reciprocal
-  prob_stay <- (1 - diag(disp1)) * (1 - diag(disp2))
+  prob_stay <- 1 - (1 - diag(disp1)) * (1 - diag(disp2))
   prob_leave <- 1 - prob_stay
 
   # combine dummy off-diagonal matrices
@@ -386,3 +386,4 @@ dispdisp <- function (x, y, landscape) {
   return (ans)
 
 }
+

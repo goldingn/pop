@@ -80,4 +80,47 @@ test_that('transfun classes work', {
   expect_error(pop:::transfunType(bad_prob))
   expect_error(pop:::transfunType(bad_prob2))
 
+  # check that dispersals and rates are combined in the right way
+  landscape <- as.landscape(list(coordinates = data.frame(x = runif(5),
+                                                          y = runif(5)),
+                                 area = data.frame(area = 1),
+                                 population = data.frame(bees = 1),
+                                 features = data.frame()[1, ]))
+
+  disp <- d(3)
+  p_disp1 <- p(0.5) * disp
+  p_disp2 <- disp * p(0.2)
+  r_disp1 <- r(1.2) * disp
+  r_disp2 <- disp * r(3.4)
+  disp_disp <- disp * disp
+
+  # evaluate
+  disp_mat <- disp(landscape)
+  p_disp1_mat <- p_disp1(landscape)
+  p_disp2_mat <- p_disp2(landscape)
+  r_disp1_mat <- r_disp1(landscape)
+  r_disp2_mat <- r_disp2(landscape)
+  disp_disp_mat <- disp_disp(landscape)
+
+  # check rowSums are (nearly) all 1, or the rate
+  eps <- sqrt(.Machine$double.eps)
+  expect_true(all((rowSums(disp_mat) - 1) < eps))
+  expect_true(all((rowSums(p_disp1_mat) - 1) < eps))
+  expect_true(all((rowSums(p_disp2_mat) - 1) < eps))
+  expect_true(all((rowSums(r_disp1_mat) - 1.2) < eps))
+  expect_true(all((rowSums(r_disp2_mat) - 3.4) < eps))
+  expect_true(all((rowSums(disp_disp_mat) - 1) < eps))
+
+  # self matrices should be prob_staying for probability compound, 0 otherwise
+  expect_true(all(diag(disp_mat) == 0))
+  expect_true(all(diag(p_disp1_mat) == 0.5))
+  expect_true(all(diag(p_disp2_mat) == 0.8))
+  expect_true(all(diag(r_disp1_mat) == 0))
+  expect_true(all(diag(r_disp2_mat) == 0))
+  expect_true(all(diag(disp_disp_mat) == 0))
+
+  # rates should be simple multiplication
+  expect_equal(r_disp1_mat, disp_mat * 1.2)
+  expect_equal(r_disp2_mat, disp_mat * 3.4)
+
 })
