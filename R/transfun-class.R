@@ -80,27 +80,16 @@ as.compound <- function (x) {
   stopifnot(is.transfun(x))
   stopifnot(is.transfun(y))
 
-  if ((is.dispersal(x) & is.probability(y)) |
-      (is.dispersal(y) & is.probability(x))) {
+  # make sure a dispersal is not combined with a rate or another dispersal
+  combineDispersalCheck(x, y)
+
+  # if it contains a dispersal, the other must be only a probability
+  if (contains(x, 'dispersal') |
+      contains(y, 'dispersal')) {
 
     # if its a dispersal and probability
     z <- function (landscape) {
       probdisp(x, y, landscape)
-    }
-
-  } else if ((is.dispersal(x) & is.rate(y)) |
-        (is.dispersal(y) & is.rate(x))) {
-
-    # if its a dispersal and rate
-    z <- function (landscape) {
-      ratedisp(x, y, landscape)
-    }
-
-  } else if (is.dispersal(x) & is.dispersal(y)) {
-
-    # if they're both dispersals
-    z <- function (landscape) {
-      dispdisp(x, y, landscape)
     }
 
   } else {
@@ -341,49 +330,12 @@ probdisp <- function (x, y, landscape) {
 
 }
 
-ratedisp <- function (x, y, landscape) {
-  # get expected dispersal fraction from a rate and a dispersal transfun.
-  # dispersal should have diagonal giving probability of staying, off-diagonals
-  # giving probability of moving to each other patch, w/ all rows summing to 1.
-  # rate is number of offspring per origin individual
-
-  # work out which way round
-  if (is.rate(x) & is.dispersal(y)) {
-    rate <- x(landscape)
-    disp <- y(landscape)
-  } else {
-    rate <- y(landscape)
-    disp <- x(landscape)
+combineDispersalCheck <- function (x, y) {
+  bad_thing1 <- contains(x, 'dispersal') &
+    (contains(y, 'dispersal') | contains(y, 'rate'))
+  bad_thing2 <- contains(y, 'dispersal') &
+    (contains(x, 'dispersal') | contains(x, 'rate'))
+  if (bad_thing1 | bad_thing2) {
+    stop ('dispersal transfuns can only be combined with probability transfuns')
   }
-
-  # multiply through & return
-  disp <- sweep(disp, 1, rate, '*')
-  return (disp)
-
 }
-
-dispdisp <- function (x, y, landscape) {
-  # get expected dispersal matrix from two dispersal transfuns.
-  # dispersal should have diagonal giving probability of staying, off-diagonals
-  # giving probability of moving to each other patch, w/ all rows summing to 1.
-
-  disp1 <- x(landscape)
-  disp2 <- y(landscape)
-
-  # get new diagonal * reciprocal
-  prob_stay <- 1 - (1 - diag(disp1)) * (1 - diag(disp2))
-  prob_leave <- 1 - prob_stay
-
-  # combine dummy off-diagonal matrices
-  diag(disp1) <- diag(disp2) <- 0
-  ans <- disp1 * disp2
-
-  # make these sum to prob_leave
-  ans <- sweep(ans, 1, prob_leave * rowSums(ans), '*')
-
-  # add diagonal back in & return
-  diag(ans) <- prob_stay
-  return (ans)
-
-}
-
