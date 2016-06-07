@@ -1,7 +1,7 @@
 Package: pop
 Type: Package
 Title: A Flexible Syntax for Population Dynamic Modelling
-Version: 0.1
+Version: 0.2
 Date: 2016-06-07
 Author: Nick Golding
 Maintainer: Nick Golding <nick.golding.research@gmail.com>
