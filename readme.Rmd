@@ -24,7 +24,13 @@ This package is a work in progress. So far you can create stage-structured dynam
 
 #### Installation
 
-`pop` is not yet on CRAN, so the easiest way to install it is directly from GitHub using the `devtools` package (Windows users may need to download RTools first)
+`pop` is now on [CRAN](https://cran.r-project.org/package=pop), so you can install the package with:
+
+```{r install1, eval = FALSE}
+install.packages('pop')
+```
+
+You can also install the development version directly from GitHub using the `devtools` package: 
 
 ```{r install, eval = FALSE}
 devtools::install_github('goldingn/pop')
